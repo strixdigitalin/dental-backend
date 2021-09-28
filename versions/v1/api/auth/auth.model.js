@@ -29,8 +29,10 @@ const userSchema = mongoose.Schema({
   expiry_date : {
     type : Date
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
+  resetLink: {
+    type: String,
+    default: ''
+  }
 });
 
 module.exports = mongoose.model("User", userSchema);
