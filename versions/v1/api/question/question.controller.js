@@ -3,13 +3,24 @@ const FunctionalKnowledge = require("../functional_knowledge/category.model");
 const Topics = require("../topics/subcategory.model");
 const MyError = require("../../error/MyError");
 const async = require('async');
+const mongoose = require("mongoose");
+const createHttpError = require("http-errors");
 
 exports.createQuestion = async (req, res, next) => {
   try {
-    const question = await Question.create(req.body);
+    const question = new Question({
+      _id: new mongoose.Types.ObjectId(),
+      functionalKnowledge: req.body.functionalKnowledge,
+      topics: req.body.topics,
+      questionTitle: req.body.questionTitle,
+      options: req.body.options,
+      users: []
+    })
     const topics = await Topics.updateOne({ _id: req.body.topics }, { $inc: { questionsCount: 1 } });
     const functionalKnowledge = await FunctionalKnowledge.updateOne({ _id: req.body.functionalKnowledge }, { $inc: { questionsCount: 1 } });
-    res.status(200).json({ statusCode: 200,message : "success", question });
+    question.save().then(data => {
+      res.status(200).json({ statusCode: 200, message: "success", question });
+    })
   } catch (error) {
     next(error);
   }
@@ -62,6 +73,27 @@ exports.getAllQuestions = async (req, res, next) => {
   });
 };
 
-// exports.getQuestionsByCategory = async (req, res, next) => {
-
-// };
+exports.addQuestionToCategory = async (req, res, next) => {
+  try {
+    let user = {
+      user: req.user.id,
+      isUnused: req.body.isUnused,
+      isMarked: req.body.isMarked,
+      isIncorrect: req.body.isIncorrect,
+      isCorrect: req.body.isCorrect
+    }
+    const questions = await Question.findById(req.params.id);
+    if (!questions) {
+      next(createHttpError.NotFound('No Question'))
+    }
+    console.log(questions.users)
+    questions.users.push(user);
+    let questionpush = await questions.save();
+    res.status(200).json({
+      message: "success",
+      data: questionpush
+    })
+  } catch (error) {
+    next(error);
+  }
+};

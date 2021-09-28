@@ -29,6 +29,7 @@ exports.createTest = async (req, res, next) => {
         total_score : total_score,
         totalQuestions : req.body.totalquestion
       })
+
       test.save().then(data =>{
         res.status(200).json({
           statusCode : 200,
