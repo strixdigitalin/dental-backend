@@ -6,6 +6,7 @@ const questionRoute = require("../api/question/question.route");
 const subcategoryRoute = require("../api/topics/subcategory.route");
 const subscriptionRoute = require("../api/subscription/subscription.route");
 const testResultRoute = require("../api/test_results/test_result.route");
+const testRoute = require("../api/test/test.route");
 // @route - https://dworld-backend.herokuapp.com/api/v1
 
 router.use("/auth", authRoute);
@@ -14,5 +15,6 @@ router.use("/question", questionRoute);
 router.use("/topic", subcategoryRoute);
 router.use("/subscription", subscriptionRoute);
 router.use("/testResult", testResultRoute);
+router.use("/test", testRoute);
 
 module.exports = router;
