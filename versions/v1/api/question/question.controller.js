@@ -1,6 +1,6 @@
 const Question = require("./question.model");
-const FunctionalKnowledge = require("../category/category.model");
-const Topics = require("../subcategory/subcategory.model");
+const FunctionalKnowledge = require("../functional_knowledge/category.model");
+const Topics = require("../topics/subcategory.model");
 const MyError = require("../../error/MyError");
 const async = require('async');
 

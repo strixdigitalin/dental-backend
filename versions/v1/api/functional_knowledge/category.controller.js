@@ -19,6 +19,17 @@ exports.getAllCategory = async (req, res, next) => {
   }
 };
 
+exports.getCatValues = async (req,res,next) => {
+  try {
+    const questions = await Question.find({});
+    console.log(questions) 
+    const categories = await Category.find({}).populate('topics' , '-__v').select('-__v -createdAt -updatedAt');
+   
+  } catch (error) {
+    next(error);
+  }
+}
+
 exports.createCategory = (req, res, next) => {
   const category = new Category({
     _id: new mongoose.Types.ObjectId(),
