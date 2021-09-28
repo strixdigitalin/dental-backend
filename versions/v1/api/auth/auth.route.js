@@ -4,16 +4,18 @@ const {
   signUp,
   forgotPassword,
   resetPassword,
-  refreshToken,
+  changeName,
+  changePassword
 } = require("./auth.controller");
 const router = express.Router();
 
-// @route - https://dworld-backend.herokuapp.com/api/v1/auth
+
 
 router.post("/login", signIn);
 router.post("/register", signUp);
-router.post("/refreshToken", refreshToken);
 router.post("/forgotPassword", forgotPassword);
 router.put("/resetPassword/:resetToken", resetPassword);
+router.put("/changeName/:id", changeName);
+router.put("/changePassword/:id", changePassword);
 
 module.exports = router;
