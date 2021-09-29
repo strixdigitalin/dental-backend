@@ -11,12 +11,12 @@ mongoose
     useFindAndModify: false,
   })
   .then(() => {
-    console.log("Connected to database 👍");
+    console.log("Connected to database");
   })
   .catch(() => {
     console.log("Failed to connect to the database.");
     // eslint-disable-next-line no-undef
-    process.exit(-1);
+    // process.exit(-1);
   });
 
 // eslint-disable-next-line no-undef

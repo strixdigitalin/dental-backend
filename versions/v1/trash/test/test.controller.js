@@ -1,6 +1,6 @@
-const Question = require("../question/question.model");
+const Question = require("../../api/question/question.model");
 const Test = require("./test.model");
-const TestResult = require("../test_results/test_result.model");
+const TestResult = require("../../api/test_results/test_result.model");
 const mongoose = require('mongoose');
 const createError = require("http-errors");
 
@@ -56,3 +56,21 @@ exports.getAllTestUser = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAllAnswersCount = async (req,res,next) =>{
+  try {
+    const test = await Test.find({user : req.user.id}).populate('test_results' , '-__v').select('-__v -createdAt -updatedAt');
+  
+    console.log(test[0].test_results)
+      res.status(200).json({
+        statusCode: 200,
+        message: "success",
+        data: {
+          totalQuestions : test[0].totalQuestions,
+          totalTests : test[0].test_results.length
+        }
+      });
+  } catch (error) {
+    next(error);
+  }
+}

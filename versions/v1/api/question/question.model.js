@@ -18,15 +18,9 @@ const questionSchema = Schema(
         isCorrect: Boolean,
       },
     ],
-    users : [
-      {
-        user : {type : mongoose.Schema.Types.ObjectId,ref : 'User'},
-        isUnused : {type : Boolean ,default : false},
-        isMarked : {type : Boolean,default : false},
-        isIncorrect : {type : Boolean,default : false},
-        isCorrect : {type : Boolean,default : false}
-      }
-    ]
+    explaination : {
+      type : String
+    }
   },
   { timestamps: true }
 );
