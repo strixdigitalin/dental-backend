@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  role: {
+    type : String,
+    default : "User"
+  },
   area_of_practise: {
     type: String,
     required: true,

@@ -5,13 +5,15 @@ const {
   forgotPassword,
   resetPassword,
   changeName,
-  changePassword
+  changePassword,
+  signInAdmin
 } = require("./auth.controller");
 const router = express.Router();
 
 
 
 router.post("/login", signIn);
+router.post("/loginAdmin", signInAdmin);
 router.post("/register", signUp);
 router.post("/forgotPassword", forgotPassword);
 router.put("/resetPassword/:resetToken", resetPassword);
