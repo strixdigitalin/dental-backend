@@ -15,7 +15,8 @@ exports.createQuestion = async (req, res, next) => {
       topics: req.body.topics,
       questionTitle: req.body.questionTitle,
       options: req.body.options,
-      explaination: req.body.explaination
+      explaination: req.body.explaination,
+      user : []
     })
     const topics = await Topics.updateOne({ _id: req.body.topics }, { $inc: { questionsCount: 1 } });
     const functionalKnowledge = await FunctionalKnowledge.updateOne({ _id: req.body.functionalKnowledge }, { $inc: { questionsCount: 1 } });

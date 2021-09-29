@@ -1,26 +1,7 @@
-const app = require("./app");
+const http = require('http');
+const app = require('./app');
+const port = process.env.PORT || 8000;
 
-const mongoose = require("mongoose");
+const server = http.createServer(app);
 
-mongoose
-  // eslint-disable-next-line no-undef
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
-  .then(() => {
-    console.log("Connected to database");
-  })
-  .catch(() => {
-    console.log("Failed to connect to the database.");
-    // eslint-disable-next-line no-undef
-    // process.exit(-1);
-  });
-
-// eslint-disable-next-line no-undef
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-  console.log("Server is running on PORT " + PORT);
-});
+server.listen(port,()=>{console.log('Server is Running on 8000')});

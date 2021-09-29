@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
-const Subcategory = require("./subcategory.model");
+const SubTopic = require("./subtopics.model");
 const createError = require("http-errors");
 
-exports.postSubcat = (req, res, next) => {
-  const subcategory = new Subcategory({
+exports.postSubtopic = (req, res, next) => {
+  const subcategory = new SubTopic({
     _id: new mongoose.Types.ObjectId(),
     title: req.body.title,
-    subtopics : req.body.subtopics
   });
   subcategory
     .save()
@@ -23,9 +22,9 @@ exports.postSubcat = (req, res, next) => {
 };
 
 
-exports.getAllTopics = async (req, res, next) => {
+exports.getAllSubTopics = async (req, res, next) => {
   try {
-    const categories = await Subcategory.find({}).select('-__v -createdAt -updatedAt');
+    const categories = await SubTopic.find({}).select('-__v -createdAt -updatedAt');
     // if (categories.length === 0)
     //   return next(new MyError(400, "no topics found"));
       res.status(200).json({

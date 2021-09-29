@@ -1,11 +1,16 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
+require("dotenv").config();
 
+
+  
 const app = express();
 app.use(cors());
 
-require("dotenv").config();
+//Connection db
+require('./versions/v1/helpers/init.mongodb');
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -18,7 +18,16 @@ const profileSchema = mongoose.Schema({
     },
     expiryDate: {
         type: Date
-    }
+    },
+    question_details : [
+        {
+          question : {type : mongoose.Schema.Types.ObjectId,ref : 'Question'},
+          isUnused : {type : Boolean ,default : false},
+          isMarked : {type : Boolean,default : false},
+          isIncorrect : {type : Boolean,default : false},
+          isCorrect : {type : Boolean,default : false}
+        }
+      ]
 });
 
 module.exports = mongoose.model("Profile", profileSchema);

@@ -6,7 +6,7 @@ exports.getAllCategory = async (req, res, next) => {
   try {
     const questions = await Question.find({});
     console.log(questions) 
-    const categories = await Category.find({}).populate('topics' , '-__v').select('-__v -createdAt -updatedAt');
+    const categories = await Category.find({}).populate({path:'topics' , select:'-__v',populate:{path:'subtopics',select:'-__v'}}).select('-__v -createdAt -updatedAt');
     if (categories.length === 0)
       return next(new MyError(400, "no categories found"));
       res.status(200).json({

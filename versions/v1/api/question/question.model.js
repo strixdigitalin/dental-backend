@@ -20,7 +20,11 @@ const questionSchema = Schema(
     ],
     explaination : {
       type : String
-    }
+    },
+    user : [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }]
   },
   { timestamps: true }
 );

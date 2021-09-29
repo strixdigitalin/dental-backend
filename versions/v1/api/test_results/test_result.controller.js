@@ -33,7 +33,9 @@ exports.createTestResult = (req, res, next) => {
 
   exports.getAllTestResults = async (req, res, next) => {
     try {
-      const testResults = await Test.find({user : req.user.id}).populate('questions_details.question' , '-__v').select('-__v');
+      const testResults = await Test.find({user : req.user.id}).populate({path:'questions_details.question ' , select:'-__v',populate:{
+        path:'functionalKnowledge topics',select : 'title'
+      }}).select('-__v');
     
         res.status(200).json({
           statusCode: 200,
