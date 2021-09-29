@@ -31,10 +31,26 @@ exports.createTestResult = (req, res, next) => {
   };
 
 
-  exports.getAllTestResults = async (req, res, next) => {
+  exports.getAllTestResultsUser = async (req, res, next) => {
     try {
       const testResults = await Test.find({user : req.user.id}).populate({path:'questions_details.question ' , select:'-__v',populate:{
-        path:'functionalKnowledge topics',select : 'title'
+        path:'functionalKnowledge topics',select : 'title',populate:{path:'subtopics',select:'title'}
+      }}).select('-__v');
+    
+        res.status(200).json({
+          statusCode: 200,
+          message: "success",
+          data: testResults
+        });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  exports.getTestResultsById = async (req, res, next) => {
+    try {
+      const testResults = await Test.findOne({_id : req.params.id}).populate({path:'questions_details.question ' , select:'-__v',populate:{
+        path:'functionalKnowledge topics',select : 'title',populate:{path:'subtopics',select:'title'}
       }}).select('-__v');
     
         res.status(200).json({
