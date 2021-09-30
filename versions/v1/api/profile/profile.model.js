@@ -22,12 +22,34 @@ const profileSchema = mongoose.Schema({
     question_details : [
         {
           question : {type : mongoose.Schema.Types.ObjectId,ref : 'Question'},
-          isUnused : {type : Boolean ,default : false},
+          isUnanswered : {type : Boolean ,default : false},
           isMarked : {type : Boolean,default : false},
           isIncorrect : {type : Boolean,default : false},
           isCorrect : {type : Boolean,default : false}
         }
-      ]
+      ],
+      total_Correct : {
+        type : Number,
+        default : 0
+      },
+      total_Unused : {
+          type : Number
+      },
+      total_questions : {
+          type : Number
+      },
+      total_Incorrect : {
+          type : Number,
+          default : 0
+      },
+      total_Marked : {
+          type : Number,
+          default : 0
+      },
+      total_Unanswered : {
+          type : Number,
+          default : 0
+      }
 });
 
 module.exports = mongoose.model("Profile", profileSchema);
