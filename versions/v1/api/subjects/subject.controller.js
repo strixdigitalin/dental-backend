@@ -29,13 +29,7 @@ exports.getAllSubjects = async (req, res, next) => {
         },
        
       },
-    
-      // {
-      //   $unwind: {
-      //     path: "$topics.subtopics",
-      //     preserveNullAndEmptyArrays: true,
-      //   },
-      // },
+  
 
   
     ])
