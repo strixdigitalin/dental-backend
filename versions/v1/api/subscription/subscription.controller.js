@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const createError = require("http-errors");
 exports.getAllSubscription = async (req, res, next) => {
   try {
-    const subscription = await Subscription.find({}).select('-__v');
+    const subscription = await Subscription.find({}).sort({createdAt: 1}).select('-__v');
     
       res.status(200).json({
         statusCode: 200,
