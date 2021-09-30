@@ -1,8 +1,8 @@
 const express = require("express");
 const { verifyToken } = require("../../middlewares/auth");
-const { postSubcat, getAllTopics } = require("./subcategory.controller");
+const { postSubcat,postTopics, getAllTopics } = require("./topics.controller");
 const router = express.Router();
 
-router.route("/").post(postSubcat).get(getAllTopics);
+router.route("/").post(postTopics).get(getAllTopics);
 
 module.exports = router;

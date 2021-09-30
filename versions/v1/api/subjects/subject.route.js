@@ -5,10 +5,12 @@ const {
   getCategory,
   createCategory,
   getCatValues,
-} = require("./category.controller");
+  getAllSubjects,
+  createSubject
+} = require("./subject.controller");
 const router = express.Router();
 
-router.route("/").get(getAllCategory).post(createCategory);
+router.route("/").get(getAllSubjects).post(createSubject);
 router.get("/category",verifyToken,getCatValues);
 
 module.exports = router;

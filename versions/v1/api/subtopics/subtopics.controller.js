@@ -6,6 +6,7 @@ exports.postSubtopic = (req, res, next) => {
   const subcategory = new SubTopic({
     _id: new mongoose.Types.ObjectId(),
     title: req.body.title,
+    topic : req.body.topic
   });
   subcategory
     .save()

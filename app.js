@@ -11,6 +11,8 @@ app.use(cors());
 //Connection db
 require('./versions/v1/helpers/init.mongodb');
 
+require('events').EventEmitter.defaultMaxListeners = 15;
+
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

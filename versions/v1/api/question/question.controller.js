@@ -1,6 +1,6 @@
 const Question = require("./question.model");
-const FunctionalKnowledge = require("../functional_knowledge/category.model");
-const Topics = require("../topics/subcategory.model");
+const FunctionalKnowledge = require("../subjects/subject.model");
+const Topics = require("../topics/topics.model");
 const MyError = require("../../error/MyError");
 const async = require('async');
 const mongoose = require("mongoose");
@@ -18,8 +18,8 @@ exports.createQuestion = async (req, res, next) => {
       explaination: req.body.explaination,
       user : []
     })
-    const topics = await Topics.updateOne({ _id: req.body.topics }, { $inc: { questionsCount: 1 } });
-    const functionalKnowledge = await FunctionalKnowledge.updateOne({ _id: req.body.functionalKnowledge }, { $inc: { questionsCount: 1 } });
+    await Topics.updateOne({ _id: req.body.topics }, { $inc: { questionsCount: 1 } });
+    await FunctionalKnowledge.updateOne({ _id: req.body.functionalKnowledge }, { $inc: { questionsCount: 1 } });
     question.save().then(data => {
       res.status(200).json({ statusCode: 200, message: "success", question });
     })
