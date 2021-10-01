@@ -1,6 +1,5 @@
 const Subject = require("./subject.model");
 const MyError = require("../../error/MyError");
-const Question = require("../question/question.model");
 const mongoose = require('mongoose');
 exports.getAllSubjects = async (req, res, next) => {
   try {
@@ -52,16 +51,7 @@ exports.getAllSubjects = async (req, res, next) => {
   }
 };
 
-exports.getCatValues = async (req, res, next) => {
-  try {
-    const questions = await Question.find({});
-    console.log(questions)
-    const categories = await Subject.find({}).populate('topics', '-__v').select('-__v -createdAt -updatedAt');
 
-  } catch (error) {
-    next(error);
-  }
-}
 
 exports.createSubject = (req, res, next) => {
   const category = new Subject({
