@@ -11,7 +11,7 @@ const ProfileRoute = require("../api/profile/profile.route");
 // @route - https://dworld-backend.herokuapp.com/api/v1
 
 router.use("/auth", authRoute);
-router.use("/functionalKnowledge", SubjectRoute);
+router.use("/subject", SubjectRoute);
 router.use("/question", questionRoute);
 router.use("/topic", subcategoryRoute);
 router.use("/subscription", subscriptionRoute);

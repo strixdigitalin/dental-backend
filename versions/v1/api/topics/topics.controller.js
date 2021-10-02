@@ -6,7 +6,7 @@ exports.postTopics = (req, res, next) => {
   const subcategory = new Topics({
     _id: new mongoose.Types.ObjectId(),
     title: req.body.title,
-    subject : req.body.subject
+    subject: req.body.subject,
   });
   subcategory
     .save()
@@ -22,17 +22,15 @@ exports.postTopics = (req, res, next) => {
     });
 };
 
-
 exports.getAllTopics = async (req, res, next) => {
   try {
-    const categories = await Topics.find({}).select('-__v -createdAt -updatedAt');
-    // if (categories.length === 0)
-    //   return next(new MyError(400, "no topics found"));
-      res.status(200).json({
-        statusCode: 200,
-        message: "success",
-        data: categories
-      });
+    const categories = await Topics.find({});
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "success",
+      data: categories,
+    });
   } catch (error) {
     next(error);
   }
