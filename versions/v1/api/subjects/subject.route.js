@@ -1,5 +1,5 @@
 const express = require("express");
-const { verifyToken } = require("../../middlewares/auth");
+const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 const {
   getAllSubjects,
   createSubject,
@@ -7,8 +7,8 @@ const {
 } = require("./subject.controller");
 const router = express.Router();
 
-router.route("/").get(getAllSubjects).post(createSubject);
+router.route("/").get(AdminVerifyToken,getAllSubjects).post(AdminVerifyToken,createSubject);
 
-router.route("/details").get(getSubjectDetails);
+router.route("/details").get(verifyToken, getSubjectDetails);
 
 module.exports = router;

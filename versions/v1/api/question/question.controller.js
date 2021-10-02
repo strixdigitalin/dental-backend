@@ -8,24 +8,21 @@ const createHttpError = require("http-errors");
 const Test = require("../test_results/test_result.model");
 
 exports.createQuestion = async (req, res, next) => {
-  try {
+  
     const question = new Question({
       _id: new mongoose.Types.ObjectId(),
-      functionalKnowledge: req.body.functionalKnowledge,
-      topics: req.body.topics,
+      subject: req.body.subject,
+      topic: req.body.topic,
+      subtopic : req.body.subtopic,
+      questionType : req.body.questionType,
       questionTitle: req.body.questionTitle,
       options: req.body.options,
-      explaination: req.body.explaination,
-      user : []
+      explaination: req.body.explaination
     })
-    await Topics.updateOne({ _id: req.body.topics }, { $inc: { questionsCount: 1 } });
-    await FunctionalKnowledge.updateOne({ _id: req.body.functionalKnowledge }, { $inc: { questionsCount: 1 } });
     question.save().then(data => {
-      res.status(200).json({ statusCode: 200, message: "success", question });
-    })
-  } catch (error) {
-    next(error);
-  }
+      res.status(200).json({ statusCode: 200,success : true, message: "success", question });
+    }).catch(err=>{next(err)})
+ 
 };
 
 exports.getAllQuestions = async (req, res, next) => {

@@ -127,12 +127,11 @@ exports.forgotPassword = async (req, res, next) => {
     const filter = { _id: user._id };
     const update = { resetLink: resetToken };
     await User.findByIdAndUpdate(filter, update);
-    let mailRes = await sendEmail(
+    await sendEmail(
       { to : email,
         subject : "Password Reset Link | DWorld",
         text :   `Click here to reset your password 👉 ${resetUrl}`,
       });
-  console.log(mailRes)
     res.status(200).json({ success: true, data: { message: "Link has been sent to your email", resetUrl, resetToken } });
   } catch (error) {
     console.log(error)
@@ -177,7 +176,7 @@ exports.resetPassword = async (req, res, next) => {
 
 function generateAccessToken(user) {
   return jwt.sign(
-    { email: user.email, id: user._id },
+    { email: user.email,role : user.role, id: user._id },
     process.env.ACCESS_SECRET,
     {
       expiresIn: "365d",
