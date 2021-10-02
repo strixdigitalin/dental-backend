@@ -24,7 +24,7 @@ exports.signIn = async (req, res, next) => {
     // response
     res.status(200).json({
       status: "success",
-      user: {
+      data: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -58,7 +58,7 @@ exports.signInAdmin = async (req, res, next) => {
     // response
     res.status(200).json({
       status: "success",
-      user: {
+      data: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -90,8 +90,8 @@ exports.signUp = async (req, res, next) => {
 
     // response
     res.status(201).json({
-      status: "ok",
-      user: {
+      status: "success",
+      data: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
@@ -179,7 +179,7 @@ exports.changeName = async (req, res, next) => {
     const update = { firstName: firstName, lastName: lastName };
     User.findByIdAndUpdate(_id, update)
     .then(user => {
-      res.status(200).json({ status: 'ok', message: 'Name Updated', updatedFirstName : firstName, updatedLastName : lastName });
+      res.status(200).json({ status: 'success', message: 'Name Updated', data : {updatedFirstName : firstName, updatedLastName : lastName} });
     })
     .catch(err => {
         res.status(401).json({ status: 'failed', message: 'invalid user id' });

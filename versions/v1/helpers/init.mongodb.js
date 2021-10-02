@@ -3,16 +3,16 @@ require("dotenv").config();
 
 
 mongoose.connect(
-    'mongodb+srv://anandca:'
+    'mongodb+srv://admin:'
     + process.env.MONGO_ATLAS_PW +
-    '@d-world-cluster.vced2.mongodb.net/Dworld?retryWrites=true&w=majority',
+    '@dworld.glddb.mongodb.net/dental_world?retryWrites=true&w=majority',
     {
         useUnifiedTopology: true,
         useNewUrlParser: true,
         useCreateIndex: true,
-         useFindAndModify: false 
+        useFindAndModify: false
     }
-).then(()=>{console.log('Database Connected')})
-.catch(err=>{
-    console.log(err.message)
-});
+).then(() => { console.log('Database Connected') })
+    .catch(err => {
+        console.log(err.message)
+    });
