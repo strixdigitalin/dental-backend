@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Topics = require("./topics.model");
-const createError = require("http-errors");
 
 exports.postTopics = (req, res, next) => {
   const subcategory = new Topics({
@@ -12,7 +11,7 @@ exports.postTopics = (req, res, next) => {
     .save()
     .then((data) => {
       res.status(201).json({
-        statusCode: 201,
+        success : true,
         message: "Created Successfully",
         data: data,
       });
@@ -27,7 +26,7 @@ exports.getAllTopics = async (req, res, next) => {
     const categories = await Topics.find({});
 
     res.status(200).json({
-      statusCode: 200,
+      success : true,
       message: "success",
       data: categories,
     });

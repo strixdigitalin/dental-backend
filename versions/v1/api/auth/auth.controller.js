@@ -2,8 +2,8 @@ const User = require("./auth.model");
 const MyError = require("../../error/MyError");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const sendMail = require("../../configs/sendEmail");
-const createHttpError = require("http-errors");
+const { sendEmail } = require("../../configs/sendEmail");
+const { text } = require("express");
 
 require("dotenv").config();
 
@@ -27,12 +27,12 @@ exports.signIn = async (req, res, next) => {
       success: true,
       data: {
         user: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        area_of_practise: user.area_of_practise,
-        resetLink: user.resetLink,
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          area_of_practise: user.area_of_practise,
+          resetLink: user.resetLink,
         },
         tokenRes
       }
@@ -50,7 +50,7 @@ exports.signInAdmin = async (req, res, next) => {
     console.log(user);
     if (!user) return next(new MyError(400, "User doesn't exist"));
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if(user.role != 'Admin'){
+    if (user.role != 'Admin') {
       return next(new MyError(401, "You are Not Authorized User"));
     }
     if (!isPasswordCorrect) return next(new MyError(400, "Incorrect Password"));
@@ -71,7 +71,7 @@ exports.signInAdmin = async (req, res, next) => {
         },
         tokenRes
       }
-      
+
     });
   } catch (error) {
     next(error);
@@ -117,19 +117,23 @@ exports.forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ email });
     console.log(user)
     if (!user) return next(new MyError(400, "User doesn't exist"));
-    
+
     const resetToken = jwt.sign({ _id: user._id }, process.env.RESET_PASS_KEY, { expiresIn: '20m' });
-    
+
     // sent reset url through email
-    const resetUrl = `http://localhost:8000/api/v1/auth/resetPassword/${resetToken}`;
+    const resetUrl = `http://localhost:3000/passwordReset/${resetToken}`;
 
     //set resetLink val in db
     const filter = { _id: user._id };
     const update = { resetLink: resetToken };
     await User.findByIdAndUpdate(filter, update);
-    const mailRes = sendMail(email,"Password Reset Link | DWorld",`Open this link to reset your password 👉 ${resetUrl}`,`Click <a href=${resetUrl}>here</a> to Reset Your Password`);
-    if (mailRes) res.status(200).json({ success : true , data : {message:"Link has been sent to your email", resetUrl, resetToken} });
-    else { next(new MyError(400, "Error Occur While Sending Mail")) };
+    let mailRes = await sendEmail(
+      { to : email,
+        subject : "Password Reset Link | DWorld",
+        text :   `Click here to reset your password 👉 ${resetUrl}`,
+      });
+  console.log(mailRes)
+    res.status(200).json({ success: true, data: { message: "Link has been sent to your email", resetUrl, resetToken } });
   } catch (error) {
     console.log(error)
     next(error);
@@ -145,7 +149,7 @@ exports.resetPassword = async (req, res, next) => {
   console.log(hashedPassword);
 
   if (!resetToken) {
-   next(new MyError(404, "Reset Token Not Found"))
+    next(new MyError(404, "Reset Token Not Found"))
   }
 
   try {
@@ -159,8 +163,8 @@ exports.resetPassword = async (req, res, next) => {
       User.findOneAndUpdate(filter, update)
         .then(user => {
           res.status(200).json({
-            success : true,
-            data : user
+            success: true,
+            data: user
           })
         })
         .catch(err => { next(err); });
@@ -187,12 +191,12 @@ exports.changeName = async (req, res, next) => {
   try {
     const update = { firstName: firstName, lastName: lastName };
     User.findByIdAndUpdate(_id, update)
-    .then(user => {
-      res.status(200).json({ success: true, data : {updatedFirstName : firstName, updatedLastName : lastName} });
-    })
-    .catch(err => {
-      next(err)
-    })
+      .then(user => {
+        res.status(200).json({ success: true, data: { updatedFirstName: firstName, updatedLastName: lastName } });
+      })
+      .catch(err => {
+        next(err)
+      })
   } catch (err) {
     next(err);
   }
@@ -210,7 +214,7 @@ exports.changePassword = async function (req, res, next) {
   const update = { password: hashedNewPassword };
   User.findByIdAndUpdate(_id, update)
     .then(user => {
-      res.status(200).json({ success: true, data : {message: 'Password updated for ' + user.firstName + ' ' + user.lastName} });
+      res.status(200).json({ success: true, data: { message: 'Password updated for ' + user.firstName + ' ' + user.lastName } });
     })
     .catch(err => next(err));
 }

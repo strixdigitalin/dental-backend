@@ -3,6 +3,8 @@ const { google } = require("googleapis");
 require("dotenv").config();
 
 exports.sendEmail = async ({ to, subject, text }) => {
+ 
+  let res;
   const oAuth2Client = new google.auth.OAuth2(
     process.env.CLIENT_ID,
     process.env.CLIENT_SECRET,
@@ -25,17 +27,19 @@ exports.sendEmail = async ({ to, subject, text }) => {
   });
 
   var mailOptions = {
-    from: `DENSEC DEVELOPER <${process.env.FROM_ADDRESS}>`,
+    from: `Dental World <${process.env.FROM_ADDRESS}>`,
     to: to,
     subject: subject,
     text: text,
   };
-
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
       console.log(error);
+      return false
     } else {
       console.log("Email sent: " + info.response);
+      return true
     }
   });
 };
+

@@ -7,7 +7,7 @@ exports.getAllSubjects = async (req, res, next) => {
     const subjects = await Subject.find();
 
     res.status(200).json({
-      statusCode: 200,
+      success : true,
       message: "success",
       data: subjects,
     });
@@ -82,7 +82,7 @@ exports.getSubjectDetails = async (req, res, next) => {
     ]);
 
     res.status(200).json({
-      statusCode: 200,
+      success : true,
       message: "success",
       data: subjects,
     });
@@ -100,7 +100,7 @@ exports.createSubject = (req, res, next) => {
     .save()
     .then((data) => {
       res.status(201).json({
-        statusCode: 201,
+        success : true,
         message: "Created Successfully",
         data: data,
       });

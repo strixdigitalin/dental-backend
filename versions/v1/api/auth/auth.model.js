@@ -26,14 +26,7 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  subscription : {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Subscription'
-  },
-  expiry_date : {
-    type : Date
-  },
-  resetLink: {
+  resetPasswordToken: {
     type: String,
     default: ''
   }

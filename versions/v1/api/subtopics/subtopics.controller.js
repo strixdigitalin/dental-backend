@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const SubTopic = require("./subtopics.model");
-const createError = require("http-errors");
 
 exports.postSubtopic = (req, res, next) => {
   const subcategory = new SubTopic({
@@ -12,7 +11,7 @@ exports.postSubtopic = (req, res, next) => {
     .save()
     .then((data) => {
       res.status(201).json({
-        statusCode: 201,
+        success : true,
         message: "Created Successfully",
         data: data,
       });
@@ -27,7 +26,7 @@ exports.getAllSubTopics = async (req, res, next) => {
     const categories = await SubTopic.find({});
 
     res.status(200).json({
-      statusCode: 200,
+      success : true,
       message: "success",
       data: categories,
     });
