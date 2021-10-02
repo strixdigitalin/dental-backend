@@ -3,6 +3,7 @@ const MyError = require("../../error/MyError");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const sendMail = require("../../configs/sendEmail");
+const createHttpError = require("http-errors");
 
 require("dotenv").config();
 
@@ -23,16 +24,18 @@ exports.signIn = async (req, res, next) => {
 
     // response
     res.status(200).json({
-      status: "success",
+      message: "success",
       data: {
+        user: {
         _id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         area_of_practise: user.area_of_practise,
         resetLink: user.resetLink,
-      },
-      tokenRes,
+        },
+        tokenRes
+      }
     });
   } catch (error) {
     next(error);
@@ -57,15 +60,18 @@ exports.signInAdmin = async (req, res, next) => {
 
     // response
     res.status(200).json({
-      status: "success",
+      message: "success",
       data: {
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        resetLink: user.resetLink,
-      },
-      tokenRes,
+        user: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          resetLink: user.resetLink
+        },
+        tokenRes
+      }
+      
     });
   } catch (error) {
     next(error);
@@ -90,7 +96,7 @@ exports.signUp = async (req, res, next) => {
 
     // response
     res.status(201).json({
-      status: "success",
+      message: "success",
       data: {
         _id: user._id,
         firstName: user.firstName,
@@ -122,8 +128,8 @@ exports.forgotPassword = async (req, res, next) => {
     const update = { resetLink: resetToken };
     const updatedResetLink = await User.findByIdAndUpdate(filter, update);
     const mailRes = sendMail(email,"Password Reset Link | DWorld",`Open this link to reset your password 👉 ${resetUrl}`,`Click <a href=${resetUrl}>here</a> to Reset Your Password`);
-    if (mailRes) res.status(200).json({ status: "ok", message:"Link has been sent to your email", resetUrl, resetToken });
-    else { res.status(500).json({ status: "failed", message: "error occured while sending mail" }) };
+    if (mailRes) res.status(200).json({ message : "success" , data : {message:"Link has been sent to your email", resetUrl, resetToken} });
+    else { next(createHttpError.BadRequest('Error Occur while Sending mail')) };
   } catch (error) {
     console.log(error)
     next(error);
@@ -139,20 +145,23 @@ exports.resetPassword = async (req, res, next) => {
   console.log(hashedPassword);
 
   if (!resetToken) {
-    return res.status(404).json({ status: "failed", message: "no token passed" });
+   next(createHttpError.NotFound('Reset Token Not Found'))
   }
 
   try {
     //verifying token
     jwt.verify(resetToken, process.env.RESET_PASS_KEY, function (err, decodedRes) {
       if (err) {
-        return res.status(401).json({ status: "failed", message: "Invalid or Expired Token" });
+        next(createHttpError.Forbidden('Invalid or Expired Token'))
       }
       const filter = { resetLink: resetToken };
       const update = { password: hashedPassword };
       User.findOneAndUpdate(filter, update)
         .then(user => {
-          res.send(user);
+          res.status(200).json({
+            message : "success",
+            data : user
+          })
         })
         .catch(err => { next(err); });
     });
@@ -179,10 +188,10 @@ exports.changeName = async (req, res, next) => {
     const update = { firstName: firstName, lastName: lastName };
     User.findByIdAndUpdate(_id, update)
     .then(user => {
-      res.status(200).json({ status: 'success', message: 'Name Updated', data : {updatedFirstName : firstName, updatedLastName : lastName} });
+      res.status(200).json({ message: 'success', data : {updatedFirstName : firstName, updatedLastName : lastName} });
     })
     .catch(err => {
-        res.status(401).json({ status: 'failed', message: 'invalid user id' });
+      next(err)
     })
   } catch (err) {
     next(err);
@@ -201,7 +210,7 @@ exports.changePassword = async function (req, res, next) {
   const update = { password: hashedNewPassword };
   User.findByIdAndUpdate(_id, update)
     .then(user => {
-      res.status(200).json({ status: 'success', message: 'Password updated for ' + user.firstName + ' ' + user.lastName });
+      res.status(200).json({ message: 'success', data : {message: 'Password updated for ' + user.firstName + ' ' + user.lastName} });
     })
-    .catch(err => res.status(401).json({ status: 'failed', message: 'an error occured while updating', error: err }));
+    .catch(err => next(err));
 }
