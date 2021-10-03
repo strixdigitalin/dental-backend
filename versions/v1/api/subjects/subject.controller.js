@@ -4,12 +4,27 @@ const mongoose = require("mongoose");
 
 exports.getAllSubjects = async (req, res, next) => {
   try {
-    const subjects = await Subject.find();
+    const page = req.query.page || 1;
+    const limit = req.query.limit * 1 || 50;
+    const search = req.query.search || "";
+
+    const findBy = {
+      title: { $regex: search, $options: "i" },
+    };
+
+    const [subject, count] = await Promise.all([
+      Subject.find(findBy)
+        .sort({ _id: 1 })
+        .skip(limit * (page - 1))
+        .limit(limit),
+      Subject.countDocuments(findBy),
+    ]);
 
     res.status(200).json({
-      success : true,
+      success: true,
       message: "success",
-      data: subjects,
+      count,
+      data: subject,
     });
   } catch (error) {
     next(error);
@@ -82,7 +97,7 @@ exports.getSubjectDetails = async (req, res, next) => {
     ]);
 
     res.status(200).json({
-      success : true,
+      success: true,
       message: "success",
       data: subjects,
     });
@@ -100,7 +115,7 @@ exports.createSubject = (req, res, next) => {
     .save()
     .then((data) => {
       res.status(201).json({
-        success : true,
+        success: true,
         message: "Created Successfully",
         data: data,
       });
