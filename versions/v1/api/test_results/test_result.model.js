@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const exportConfig = require("../../configs/exportConfig");
 const Schema = mongoose.Schema;
 
 const testSchema = Schema(
@@ -9,7 +10,7 @@ const testSchema = Schema(
     },
     mode: {
       type: String,
-      enum: ['Learning', 'Test'],
+      enum: ['LEARNING', 'TEST'],
     },
     user : {
       type : mongoose.Schema.Types.ObjectId,
@@ -42,7 +43,7 @@ const testSchema = Schema(
       type: Number
     }
   },
-  { timestamps: true }
+  { timestamps: true, ...exportConfig }
 );
 
 module.exports = mongoose.model("Test", testSchema);
