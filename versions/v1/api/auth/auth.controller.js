@@ -17,6 +17,9 @@ exports.signIn = async (req, res, next) => {
     console.log(user);
     if (!user) return next(new MyError(400, "User doesn't exist"));
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (user.role != 'User') {
+      return next(new MyError(401, "You are Not Authorized User"));
+    }
     if (!isPasswordCorrect) return next(new MyError(400, "Incorrect Password"));
 
     // jwt
@@ -32,7 +35,7 @@ exports.signIn = async (req, res, next) => {
           lastName: user.lastName,
           email: user.email,
           area_of_practise: user.area_of_practise,
-          resetLink: user.resetLink,
+          resetLinkToken: user.resetLinkToken,
         },
         tokenRes
       }
@@ -67,7 +70,7 @@ exports.signInAdmin = async (req, res, next) => {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          resetLink: user.resetLink
+          resetLinkToken: user.resetLinkToken
         },
         tokenRes
       }
@@ -118,14 +121,14 @@ exports.forgotPassword = async (req, res, next) => {
     console.log(user)
     if (!user) return next(new MyError(400, "User doesn't exist"));
 
-    const resetToken = jwt.sign({ _id: user._id }, process.env.RESET_PASS_KEY, { expiresIn: '20m' });
+    const resetToken = jwt.sign({ _id: user._id }, process.env.RESET_PASS_KEY, { expiresIn: '5m' });
 
     // sent reset url through email
     const resetUrl = `http://localhost:3000/passwordReset/${resetToken}`;
 
     //set resetLink val in db
     const filter = { _id: user._id };
-    const update = { resetLink: resetToken };
+    const update = { resetLinkToken: resetToken };
     await User.findByIdAndUpdate(filter, update);
     await sendEmail(
       { to : email,
@@ -157,7 +160,7 @@ exports.resetPassword = async (req, res, next) => {
       if (err) {
         next(new MyError(404, "User doesn't exist"))
       }
-      const filter = { resetLink: resetToken };
+      const filter = { resetLinkToken: resetToken };
       const update = { password: hashedPassword };
       User.findOneAndUpdate(filter, update)
         .then(user => {

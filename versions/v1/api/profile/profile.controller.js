@@ -84,6 +84,35 @@ exports.getProfile = async (req, res, next) => {
 
 };
 
+exports.GetAllUsers = async (req,res,next) => {
+    try {
+        const profile = await Profile.find().select('-questions_details -address -city -country -zipcode -state').populate('subscription user','-__v -password  -updatedAt');
+        let profiles = profile.map(profile =>{
+            return {
+                name: profile.user.firstName + " " + profile.user.lastName,
+                role : profile.user.role,
+                email : profile.user.email,
+                area_of_practise : profile.user.area_of_practise,
+                phone: profile.phone,
+                subscriptionData: {
+                    _id : profile.subscription._id,
+                    name: profile.subscription.name,
+                    expiryDate: profile.expiryDate
+                },
+                createdAt : profile.user.createdAt,
+            }
+        }) 
+
+        res.status(200).json({
+            status: 200,
+            message: 'success',
+            data : profiles
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 exports.addQuestions = async (req, res, next) => {
     try {
