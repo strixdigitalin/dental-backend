@@ -40,13 +40,16 @@ exports.getAllQuestions = async (req, res, next) => {
     const page = req.query.page || 1;
     const limit = req.query.limit * 1 || 50;
     const search = req.query.search || "";
-
+    const subjectId = req.query.subjectId;
+    const topicId = req.query.topicId;
     const findBy = {
       questionTitle: { $regex: search, $options: "i" },
     };
     if (subTopicId) findBy.subtopic = subTopicId;
-
-    const [topics, count] = await Promise.all([
+    if(subjectId) findBy.subject = subjectId;
+    if(topicId) findBy.topic = topicId;
+console.log(findBy)
+    const [questions, count] = await Promise.all([
       Question.find(findBy)
         .sort({ _id: 1 })
         .skip(limit * (page - 1))
@@ -58,7 +61,7 @@ exports.getAllQuestions = async (req, res, next) => {
       success: true,
       message: "success",
       count,
-      data: topics,
+      data: questions,
     });
   } catch (error) {
     next(error);
