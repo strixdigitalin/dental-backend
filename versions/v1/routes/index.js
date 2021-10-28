@@ -8,6 +8,7 @@ const subscriptionRoute = require("../api/subscription/subscription.route");
 const testResultRoute = require("../api/test_results/test_result.route");
 const SubTopicRoute = require("../api/subtopics/subtopics.route");
 const ProfileRoute = require("../api/profile/profile.route");
+const adminAuthRoute = require("../api/adminAuth/adminAuth.route");
 // @route - https://dworld-backend.herokuapp.com/api/v1
 
 router.use("/auth", authRoute);
@@ -18,6 +19,7 @@ router.use("/subscription", subscriptionRoute);
 router.use("/testResult", testResultRoute);
 router.use("/subtopic", SubTopicRoute);
 router.use("/profile", ProfileRoute);
+router.use("/adminAuth",adminAuthRoute);
 // router.use("/test", testRoute);
 
 module.exports = router;

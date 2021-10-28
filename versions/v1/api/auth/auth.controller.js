@@ -17,9 +17,6 @@ exports.signIn = async (req, res, next) => {
     console.log(user);
     if (!user) return next(new MyError(400, "User doesn't exist"));
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (user.role != 'User') {
-      return next(new MyError(401, "You are Not Authorized User"));
-    }
     if (!isPasswordCorrect) return next(new MyError(400, "Incorrect Password"));
 
     // jwt
@@ -45,41 +42,10 @@ exports.signIn = async (req, res, next) => {
   }
 };
 
-exports.signInAdmin = async (req, res, next) => {
-  const { email, password } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    console.log(user);
-    if (!user) return next(new MyError(400, "User doesn't exist"));
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (user.role != 'Admin') {
-      return next(new MyError(401, "You are Not Authorized User"));
-    }
-    if (!isPasswordCorrect) return next(new MyError(400, "Incorrect Password"));
 
-    // jwt
-    tokenRes.access_token = generateAccessToken(user);
 
-    // response
-    res.status(200).json({
-      success: true,
-      data: {
-        user: {
-          _id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          resetLinkToken: user.resetLinkToken
-        },
-        tokenRes
-      }
 
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 exports.signUp = async (req, res, next) => {
   const { firstName, lastName, email, password, area_of_practise } = req.body;

@@ -19,13 +19,8 @@ exports.AdminVerifyToken = (req, res, next) => {
   if (!token) return next(new MyError(400, "No token"));
   jwt.verify(token, process.env.ACCESS_SECRET, (err, user) => {
     if (err) return next(new MyError(400, "Invalid token"));
-   if(user.role != "Admin"){
-    return next(new MyError(401, "Unauthorized"));
-   } else{
     req.user = user;
     next();
-   }
-   
   });
 };
 
