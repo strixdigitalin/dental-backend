@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { sendEmail } = require("../../configs/sendEmail");
 const { text } = require("express");
-
+const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 require("dotenv").config();
 
 const tokenRes = {};

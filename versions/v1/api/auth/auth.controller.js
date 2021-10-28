@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { sendEmail } = require("../../configs/sendEmail");
 const { text } = require("express");
-
+const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 require("dotenv").config();
 
 const tokenRes = {};
@@ -12,7 +12,7 @@ const tokenRes = {};
 exports.signIn = async (req, res, next) => {
   const { email, password } = req.body;
 
-  try {
+  try { 
     const user = await User.findOne({ email });
     console.log(user);
     if (!user) return next(new MyError(400, "User doesn't exist"));
@@ -145,10 +145,10 @@ exports.resetPassword = async (req, res, next) => {
 
 function generateAccessToken(user) {
   return jwt.sign(
-    { email: user.email,role : user.role, id: user._id },
+    { email: user.email, id: user._id },
     process.env.ACCESS_SECRET,
     {
-      expiresIn: "365d",
+      expiresIn: "300d",
     }
   );
 }
@@ -186,3 +186,34 @@ exports.changePassword = async function (req, res, next) {
     })
     .catch(err => next(err));
 }
+
+exports.logout = async function (req,res,next) {
+  try {
+    const { token } = req.body
+    if (!token) {
+      next(new MyError(404, "Body Not Found"))
+    } 
+  let user =  jwt.verify(
+      token,
+      process.env.JWT_REFRESH_KEY,
+      (err, payload) => {
+        console.log(payload)
+        if (err) {
+          next(err)
+        } 
+        return  payload.id;
+      }
+    )
+    console.log(user)
+    return  res.status(200).json({
+        statusCode : 200,
+        message : "Logout success"
+      })
+   
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+
