@@ -4,6 +4,7 @@ const async = require("async");
 const mongoose = require("mongoose");
 const createHttpError = require("http-errors");
 const Test = require("../test_results/test_result.model");
+const { result } = require("lodash");
 
 exports.createQuestion = async (req, res, next) => {
   const question = new Question({
@@ -64,6 +65,123 @@ console.log(findBy)
       data: questions,
     });
   } catch (error) {
+    next(error);
+  }
+};
+exports.getCategory = async (req, res, next) => {
+  console.log(req.query);
+  let result;
+  try {
+    if (Object.keys(req.query).length === 0) {
+      result = await Question.aggregate([
+        {
+          $group: {
+            _id: {
+              subject: "$subject",
+              topic: "$topic",
+            },
+            subtopic: {
+              $addToSet: "$subtopic",
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id.subject",
+            topics: {
+              $push: {
+                topic: "$_id.topic",
+                sub: "$subtopic",
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            subject: "$_id",
+            topics: 1,
+          },
+        },
+      ]);
+    } else {
+      let findBy = { "questions.isCorrect": true };
+      result = await Test.aggregate([
+        { $unwind: "$questions" },
+        {
+          $lookup: {
+            from: "questions",
+            localField: "questions.questionId",
+            foreignField: "_id",
+            as: "questions.newQuestions",
+          },
+        },
+        { $unwind: "$questions.newQuestions" },
+        {
+          $group: {
+            _id: "$_id",
+            root: { $mergeObjects: "$$ROOT" },
+            questions: { $push: "$questions" },
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              $mergeObjects: ["$root", "$$ROOT"],
+            },
+          },
+        },
+        {
+          $project: {
+            root: 0,
+          },
+        },
+        { $unwind: "$questions" },
+        {
+          $project: {
+            _id: 1,
+            test_name: 1,
+            questions: 1,
+            newQuestions: "$questions.newQuestions",
+          },
+        },
+        // important
+        { $match: findBy },
+        {
+          $group: {
+            _id: {
+              subject: "$newQuestions.subject",
+              topic: "$newQuestions.topic",
+            },
+            subtopic: {
+              $addToSet: "$newQuestions.subtopic",
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id.subject",
+            topics: {
+              $push: {
+                topic: "$_id.topic",
+                sub: "$subtopic",
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            subject: "$_id",
+            topics: 1,
+          },
+        },
+      ]);
+    }
+console.log(result)
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error)
     next(error);
   }
 };

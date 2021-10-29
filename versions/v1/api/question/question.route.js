@@ -4,13 +4,15 @@ const {
   getAllQuestions,
   addQuestionToCategory,
   getQuestionById,
+  getCategory
 } = require("./question.controller");
 const router = express.Router();
 const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 
 router.get("/", getAllQuestions);
+router.get("/categories", getCategory);
 router.post("/", AdminVerifyToken, createQuestion);
 router.patch("/cat/:id", verifyToken, addQuestionToCategory);
-router.get("/:id", verifyToken, getQuestionById);
+router.get("/test/:id", verifyToken, getQuestionById);
 
 module.exports = router;
