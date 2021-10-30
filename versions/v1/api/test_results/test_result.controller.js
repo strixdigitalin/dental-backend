@@ -12,12 +12,7 @@ exports.createTestResult = (req, res, next) => {
     test_name: req.body.test_name,
     mode: req.body.mode,
     user: req.user.id,
-    questions_details: req.body.questions_details,
-    correct_ans: req.body.correct_ans,
-    incorrect_ans: req.body.incorrect_ans,
-    unanswered: req.body.unanswered,
-    totalquestion: req.body.totalquestion,
-    totalscore: parseInt(req.body.correct_ans) / parseInt(req.body.totalquestion) * 100
+    questions_details: req.body.questions_details
   })
   testResult.save()
     .then((data) => {

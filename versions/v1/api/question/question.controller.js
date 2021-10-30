@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const createHttpError = require("http-errors");
 const Test = require("../test_results/test_result.model");
 const { result } = require("lodash");
-
+const ObjectId = mongoose.Types.ObjectId;
 exports.createQuestion = async (req, res, next) => {
   const question = new Question({
     subject: req.body.subject,
@@ -30,40 +30,66 @@ exports.createQuestion = async (req, res, next) => {
 
 exports.getAllQuestions = async (req, res, next) => {
   try {
-    if (
-      req.query.subTopicId &&
-      !mongoose.Types.ObjectId.isValid(req.query.subTopicId)
-    )
-      throw new MyError(400, "Not a valid Subject Id.");
+//     if (
+//       req.query.subTopicId &&
+//       !mongoose.Types.ObjectId.isValid(req.query.subTopicId)
+//     )
+//       throw new MyError(400, "Not a valid Subject Id.");
 
-    const subTopicId = req.query.subTopicId;
+//     const subTopicId = req.query.subTopicId;
 
-    const page = req.query.page || 1;
-    const limit = req.query.limit * 1 || 50;
-    const search = req.query.search || "";
-    const subjectId = req.query.subjectId;
-    const topicId = req.query.topicId;
-    const findBy = {
-      questionTitle: { $regex: search, $options: "i" },
-    };
-    if (subTopicId) findBy.subtopic = subTopicId;
-    if(subjectId) findBy.subject = subjectId;
-    if(topicId) findBy.topic = topicId;
-console.log(findBy)
-    const [questions, count] = await Promise.all([
-      Question.find(findBy)
-        .sort({ _id: 1 })
-        .skip(limit * (page - 1))
-        .limit(limit),
-      Question.countDocuments(findBy),
-    ]);
+//     const page = req.query.page || 1;
+//     const limit = req.query.limit * 1 || 50;
+//     const search = req.query.search || "";
+//     const subjectId = req.query.subjectId;
+//     const topicId = req.query.topicId;
+//     const findBy = {
+//       questionTitle: { $regex: search, $options: "i" },
+//     };
+//     if (subTopicId) findBy.subtopic = subTopicId;
+//     if(subjectId) findBy.subject = subjectId;
+//     if(topicId) findBy.topic = topicId;
+// console.log(findBy)
+//     const [questions, count] = await Promise.all([
+//       Question.find(findBy)
+//         .sort({ _id: 1 })
+//         .skip(limit * (page - 1))
+//         .limit(limit),
+//       Question.countDocuments(findBy),
+//     ]);
+const questions = await Test.aggregate([
+  {
+    $match: {
+      user: ObjectId(req.user.id),
+    },
+  },
+  { $unwind: "$questions_details" },
+  { $replaceRoot: { newRoot: "$questions_details"}},
+  {
+    $match: {
+      isCorrect: true,
+    },
+  },
+  {
+    $lookup: {
+      from: "questions",
+      localField: "question",
+      foreignField: "_id",
+      as: "question",
+    },
+  }
+])
+
 
     res.status(200).json({
       success: true,
       message: "success",
-      count,
       data: questions,
     });
+
+
+
+
   } catch (error) {
     next(error);
   }

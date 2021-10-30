@@ -25,23 +25,8 @@ const testSchema = Schema(
      isIncorrect : Boolean,
      isMarked : Boolean,
      isUnanswered : Boolean,
-     timeSpend : String
-    }],
-    correct_ans : {
-        type : Number
-    },
-    incorrect_ans : {
-        type : Number
-    },
-    unanswered : {
-        type : Number
-    },
-    totalQuestion : {
-        type : Number
-    },
-    totalscore: {
-      type: Number
-    }
+     timeSpend : Number
+    }]
   },
   { timestamps: true, ...exportConfig }
 );
