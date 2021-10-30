@@ -25,16 +25,19 @@ app.get("/", (_req, res) => {
 const v1 = require("./versions/v1/routes");
 app.use("/api/v1", v1);
 
-// 404 route.
-app.use("*", (_req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "Route not found.",
-  });
-});
 
-// error handler
-const errorHandler = require("./versions/v1/error/handleError");
-app.use(errorHandler);
+app.use((req, res, next) => {
+  const error = new Error('Bad Request');
+  error.status = 404;
+  next(error);
+})
+app.use((error, req, res, next) => {
+  res.status(error.status || 500);
+  res.json({
+      error: {
+          message: error.message
+      }
+  })
+})
 
 module.exports = app;
