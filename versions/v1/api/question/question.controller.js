@@ -28,68 +28,106 @@ exports.createQuestion = async (req, res, next) => {
     });
 };
 
-exports.getAllQuestions = async (req, res, next) => {
+exports.getAllQuestionsUser = async (req, res, next) => {
   try {
-//     if (
-//       req.query.subTopicId &&
-//       !mongoose.Types.ObjectId.isValid(req.query.subTopicId)
-//     )
-//       throw new MyError(400, "Not a valid Subject Id.");
+    console.log(req.query)
+    let results;
+    let filterBy = req.query.filterBy;
+    const subTopicId = req.query.subTopicId;
+    let filter;
+    const page = req.query.page || 1;
+    const limit = req.query.limit * 1 || 50;
+    if (req.query.filterBy != "all") {
+     if(filterBy == "isIncorrect"){
+      filter = {
+        isIncorrect : true
+       }
+     } 
+     if(filterBy == "isMarked"){
+      filter = {
+        isMarked : true
+       }
+     }
 
-//     const subTopicId = req.query.subTopicId;
-
-//     const page = req.query.page || 1;
-//     const limit = req.query.limit * 1 || 50;
-//     const search = req.query.search || "";
-//     const subjectId = req.query.subjectId;
-//     const topicId = req.query.topicId;
-//     const findBy = {
-//       questionTitle: { $regex: search, $options: "i" },
-//     };
-//     if (subTopicId) findBy.subtopic = subTopicId;
-//     if(subjectId) findBy.subject = subjectId;
-//     if(topicId) findBy.topic = topicId;
-// console.log(findBy)
-//     const [questions, count] = await Promise.all([
-//       Question.find(findBy)
-//         .sort({ _id: 1 })
-//         .skip(limit * (page - 1))
-//         .limit(limit),
-//       Question.countDocuments(findBy),
-//     ]);
-const questions = await Test.aggregate([
-  {
-    $match: {
-      user: ObjectId(req.user.id),
-    },
-  },
-  { $unwind: "$questions_details" },
-  { $replaceRoot: { newRoot: "$questions_details"}},
-  {
-    $match: {
-      isCorrect: true,
-    },
-  },
-  {
-    $lookup: {
-      from: "questions",
-      localField: "question",
-      foreignField: "_id",
-      as: "question",
-    },
-  }
-])
-
-
+     if(filterBy == "")
+       
+      results = await Test.aggregate([
+        {
+          $match: {
+            user: ObjectId(req.user.id),
+          },
+        },
+        { $unwind: "$questions_details" },
+        { $replaceRoot: { newRoot: "$questions_details" } },
+        {
+          $match: filter,
+        },
+        {
+          $lookup: {
+            from: "questions",
+            localField: "question",
+            foreignField: "_id",
+            as: "question",
+          },
+        },
+        { $unwind: "$question" },
+        { $replaceRoot: { newRoot: "$question" } },
+        {
+          $project: {
+            __v: 0
+          }
+        },
+        {$skip: limit * (page - 1)},
+        {$limit: limit}
+      ])
+    }
     res.status(200).json({
       success: true,
       message: "success",
-      data: questions,
+      data: results,
     });
 
 
 
 
+  } catch (error) {
+    next(error);
+  }
+}
+
+exports.getAllQuestions = async (req, res, next) => {
+  try {
+    if (
+      req.query.subTopicId &&
+      !mongoose.Types.ObjectId.isValid(req.query.subTopicId)
+    )
+      throw new MyError(400, "Not a valid Subject Id.");
+    const subTopicId = req.query.subTopicId;
+    const page = req.query.page || 1;
+    const limit = req.query.limit * 1 || 50;
+    const search = req.query.search || "";
+    const subjectId = req.query.subjectId;
+    const topicId = req.query.topicId;
+    const findBy = {
+      questionTitle: { $regex: search, $options: "i" },
+    };
+    if (subTopicId) findBy.subtopic = subTopicId;
+    if (subjectId) findBy.subject = subjectId;
+    if (topicId) findBy.topic = topicId;
+    console.log(findBy)
+    const [questions, count] = await Promise.all([
+      Question.find(findBy)
+        .sort({ _id: 1 })
+        .skip(limit * (page - 1))
+        .limit(limit),
+      Question.countDocuments(findBy),
+    ]);
+    res.status(200).json({
+      success: true,
+      message: "success",
+      count,
+      data: questions,
+    });
   } catch (error) {
     next(error);
   }
@@ -134,77 +172,77 @@ exports.getCategory = async (req, res, next) => {
       let findBy = { "questions.isCorrect": true };
       result = await Test.aggregate([
         { $unwind: "$questions" },
-        {
-          $lookup: {
-            from: "questions",
-            localField: "questions.questionId",
-            foreignField: "_id",
-            as: "questions.newQuestions",
-          },
-        },
-        { $unwind: "$questions.newQuestions" },
-        {
-          $group: {
-            _id: "$_id",
-            root: { $mergeObjects: "$$ROOT" },
-            questions: { $push: "$questions" },
-          },
-        },
-        {
-          $replaceRoot: {
-            newRoot: {
-              $mergeObjects: ["$root", "$$ROOT"],
-            },
-          },
-        },
-        {
-          $project: {
-            root: 0,
-          },
-        },
-        { $unwind: "$questions" },
-        {
-          $project: {
-            _id: 1,
-            test_name: 1,
-            questions: 1,
-            newQuestions: "$questions.newQuestions",
-          },
-        },
-        // important
-        { $match: findBy },
-        {
-          $group: {
-            _id: {
-              subject: "$newQuestions.subject",
-              topic: "$newQuestions.topic",
-            },
-            subtopic: {
-              $addToSet: "$newQuestions.subtopic",
-            },
-          },
-        },
-        {
-          $group: {
-            _id: "$_id.subject",
-            topics: {
-              $push: {
-                topic: "$_id.topic",
-                sub: "$subtopic",
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            subject: "$_id",
-            topics: 1,
-          },
-        },
+        // {
+        //   $lookup: {
+        //     from: "questions",
+        //     localField: "questions.questionId",
+        //     foreignField: "_id",
+        //     as: "questions.newQuestions",
+        //   },
+        // },
+        // { $unwind: "$questions.newQuestions" },
+        // {
+        //   $group: {
+        //     _id: "$_id",
+        //     root: { $mergeObjects: "$$ROOT" },
+        //     questions: { $push: "$questions" },
+        //   },
+        // },
+        // {
+        //   $replaceRoot: {
+        //     newRoot: {
+        //       $mergeObjects: ["$root", "$$ROOT"],
+        //     },
+        //   },
+        // },
+        // {
+        //   $project: {
+        //     root: 0,
+        //   },
+        // },
+        // { $unwind: "$questions" },
+        // {
+        //   $project: {
+        //     _id: 1,
+        //     test_name: 1,
+        //     questions: 1,
+        //     newQuestions: "$questions.newQuestions",
+        //   },
+        // },
+        // // important
+        // { $match: findBy },
+        // {
+        //   $group: {
+        //     _id: {
+        //       subject: "$newQuestions.subject",
+        //       topic: "$newQuestions.topic",
+        //     },
+        //     subtopic: {
+        //       $addToSet: "$newQuestions.subtopic",
+        //     },
+        //   },
+        // },
+        // {
+        //   $group: {
+        //     _id: "$_id.subject",
+        //     topics: {
+        //       $push: {
+        //         topic: "$_id.topic",
+        //         sub: "$subtopic",
+        //       },
+        //     },
+        //   },
+        // },
+        // {
+        //   $project: {
+        //     _id: 0,
+        //     subject: "$_id",
+        //     topics: 1,
+        //   },
+        // },
       ]);
     }
-console.log(result)
+    console.log(result)
     res.status(200).json(result);
   } catch (error) {
     console.log(error)
