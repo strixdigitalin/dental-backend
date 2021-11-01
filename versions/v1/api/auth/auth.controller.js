@@ -17,7 +17,7 @@ exports.signIn = async (req, res, next) => {
     console.log(user);
     if (!user) return next(new MyError(400, "User doesn't exist"));
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) return next(new MyError(400, "Incorrect Password"));
+    if (!isPasswordCorrect) throw  next(new MyError(401, "Incorrect Password"));
 
     // jwt
     tokenRes.access_token = generateAccessToken(user);

@@ -30,28 +30,21 @@ exports.createQuestion = async (req, res, next) => {
 
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
-    console.log(req.query)
     let results;
-    let filterBy = req.query.filterBy;
-    const subTopicId = req.query.subTopicId;
-    let filter;
+    let filterBy = req.body.filterBy;
+    let subtopic = req.body.subTopicId;
+    let newArrSubTopic = [];
+    for (let index = 0; index < subtopic.length; index++) {
+      const element = subtopic[index];
+      element.toString()
+      let obj = { subtopic: ObjectId(element) }
+      newArrSubTopic.push(obj)
+    }
     const page = req.query.page || 1;
     const limit = req.query.limit * 1 || 50;
+    let count;
     if (req.query.filterBy != "all") {
-     if(filterBy == "isIncorrect"){
-      filter = {
-        isIncorrect : true
-       }
-     } 
-     if(filterBy == "isMarked"){
-      filter = {
-        isMarked : true
-       }
-     }
-
-     if(filterBy == "")
-       
-      results = await Test.aggregate([
+      let cond = [
         {
           $match: {
             user: ObjectId(req.user.id),
@@ -60,7 +53,18 @@ exports.getAllQuestionsUser = async (req, res, next) => {
         { $unwind: "$questions_details" },
         { $replaceRoot: { newRoot: "$questions_details" } },
         {
-          $match: filter,
+          $project: {
+            question: 1,
+            isMarked: 1,
+            isCorrect: 1,
+            isIncorrect: 1,
+            timeSpend: 1,
+          }
+        },
+        {
+          $match: {
+            $or: filterBy,
+          },
         },
         {
           $lookup: {
@@ -73,23 +77,49 @@ exports.getAllQuestionsUser = async (req, res, next) => {
         { $unwind: "$question" },
         { $replaceRoot: { newRoot: "$question" } },
         {
+          $match: {
+            $or: newArrSubTopic
+          },
+        },
+        {
           $project: {
             __v: 0
           }
         },
-        {$skip: limit * (page - 1)},
-        {$limit: limit}
-      ])
+        { $skip: limit * (page - 1) },
+        { $limit: limit }
+      ]
+      results = await Test.aggregate(cond)
+      cond.pop();
+      cond.pop();
+      count = await Test.aggregate(cond)
+      count = count.length
+    } else {
+      let cond = [
+        {
+          $match: {
+            $or: newArrSubTopic
+          },
+        },
+        {
+          $project: {
+            __v: 0
+          }
+        },
+        { $skip: limit * (page - 1) },
+        { $limit: limit }
+      ]
+      results = await Question.aggregate(cond)
+      cond.pop();
+      cond.pop();
+      count = await Question.countDocuments(cond)
     }
     res.status(200).json({
       success: true,
       message: "success",
+      count,
       data: results,
     });
-
-
-
-
   } catch (error) {
     next(error);
   }
@@ -132,6 +162,8 @@ exports.getAllQuestions = async (req, res, next) => {
     next(error);
   }
 };
+
+
 exports.getCategory = async (req, res, next) => {
   console.log(req.query);
   let result;

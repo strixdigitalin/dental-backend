@@ -11,7 +11,7 @@ const router = express.Router();
 const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 
 router.get("/", getAllQuestions);
-router.get("/user",verifyToken,getAllQuestionsUser);
+router.post("/user",verifyToken,getAllQuestionsUser);
 router.get("/categories", getCategory);
 router.post("/", AdminVerifyToken, createQuestion);
 router.patch("/cat/:id", verifyToken, addQuestionToCategory);
