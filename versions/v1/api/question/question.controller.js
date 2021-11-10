@@ -28,6 +28,25 @@ exports.createQuestion = async (req, res, next) => {
     });
 };
 
+exports.getTestExists = async (req,res,next) => {
+  try {
+    const TestExist = await Test.countDocuments({user : req.user.id});
+    if(TestExist > 0){
+      res.status(200).json({
+        message : "success",
+        exists : true
+      })
+    }else{
+      res.status(200).json({
+        message : "success",
+        exists : false
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}
+
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
     let results;
@@ -40,9 +59,11 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       let obj = { subtopic: ObjectId(element) }
       newArrSubTopic.push(obj)
     }
+   
     const page = req.query.page || 1;
     const limit = req.query.limit * 1 || 50;
     let count;
+    
     if (req.query.filterBy != "all") {
       let cond = [
         {
