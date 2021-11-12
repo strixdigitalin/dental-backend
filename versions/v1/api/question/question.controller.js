@@ -60,6 +60,8 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       newArrSubTopic.push(obj)
     }
    
+
+
     const page = req.query.page || 1;
     const limit = req.query.limit * 1 || 50;
     let count;
@@ -107,6 +109,21 @@ exports.getAllQuestionsUser = async (req, res, next) => {
             __v: 0
           }
         },
+        {
+          $group : {
+            _id : "$_id"
+          }
+        },
+        {
+          $lookup: {
+            from: "questions",
+            localField: "_id",
+            foreignField: "_id",
+            as: "question",
+          },
+        },
+        { $unwind: "$question" },
+        { $replaceRoot: { newRoot: "$question" } },
         { $skip: limit * (page - 1) },
         { $limit: limit }
       ]
@@ -135,6 +152,13 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       cond.pop();
       count = await Question.countDocuments(cond)
     }
+  //   function removeDuplicateObjectFromArray(array, key) {
+  //     var check = new Set();
+  //     return array.filter(obj => !check.has(obj[key]) && check.add(obj[key]));
+  //   }
+     
+  //  let result = removeDuplicateObjectFromArray(results, 'questionTitle')
+  //  console.log(result)
     res.status(200).json({
       success: true,
       message: "success",
