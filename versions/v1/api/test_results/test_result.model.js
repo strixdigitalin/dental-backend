@@ -26,7 +26,14 @@ const testSchema = Schema(
      isMarked : Boolean,
      isUnanswered : Boolean,
      timeSpend : Number
-    }]
+    }],
+    totalIncorrect : Number,
+    totalQuestion : Number,
+    totalCorrect : Number,
+    totalUnanswered : Number,
+    totalTimeSpend : Number,
+    totalMarked : Number,
+    totalScore : Number
   },
   { timestamps: true, ...exportConfig }
 );

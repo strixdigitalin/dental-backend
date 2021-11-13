@@ -347,11 +347,11 @@ exports.addQuestionToCategory = async (req, res, next) => {
 exports.getQuestionById = async (req, res, next) => {
   try {
     const test = await Test.find({ _id: req.params.id })
-      .populate("functionalKnowledge topics", "title")
-      .select("-__v -functionalKnowledge.topics");
+      
     let questionId = req.query.questionId;
     let question = test[0].questions_details.find((x) => x.id === questionId);
-    const questions = await Question.find({ _id: question.question });
+    console.log(question)
+    const questions = await Question.find({ _id: question.question }).populate('subject topic subtopic','title');
     res.status(200).json({
       statusCode: 200,
       message: "success",
