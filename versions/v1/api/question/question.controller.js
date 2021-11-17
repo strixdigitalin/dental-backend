@@ -148,7 +148,7 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       results = await Question.aggregate(cond)
       cond.pop();
       cond.pop();
-      count = await Question.countDocuments(cond)
+      count = results.length
     }
     res.status(200).json({
       success: true,
