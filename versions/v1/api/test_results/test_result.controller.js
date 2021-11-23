@@ -1,6 +1,7 @@
 const Test = require("./test_result.model");
 const mongoose = require('mongoose');
 const createError = require("http-errors");
+const questionModel = require("../question/question.model");
 const ObjectId = mongoose.Types.ObjectId;
 
 
@@ -51,6 +52,9 @@ exports.getAllTestResultsUser = async (req, res, next) => {
         }
       },
       {
+        $sort : {createdAt : -1}
+      },
+      {
         $project : {
           questions_details : 0,
           user : 0,
@@ -93,3 +97,19 @@ exports.getTestResultsById = async (req, res, next) => {
     next(error);
   }
 };
+
+
+exports.topicPerfomance = async (req,res,next) => {
+  const results = await Test.aggregate([
+    {
+      $match : {
+        user : ObjectId(req.user.id)
+      }
+    }
+  ])
+  res.status(200).json({
+    success: true,
+    message: "success",
+    data: results,
+  });
+}
