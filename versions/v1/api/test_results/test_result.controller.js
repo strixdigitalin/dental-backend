@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const createError = require("http-errors");
 const questionModel = require("../question/question.model");
 const ObjectId = mongoose.Types.ObjectId;
-
+const Subject = require("../subjects/subject.model");
 
 
 
@@ -100,13 +100,69 @@ exports.getTestResultsById = async (req, res, next) => {
 
 
 exports.topicPerfomance = async (req,res,next) => {
-  const results = await Test.aggregate([
+  const results = await Subject.aggregate([
     {
-      $match : {
-        user : ObjectId(req.user.id)
-      }
-    }
-  ])
+      $lookup: {
+        from: "topics",
+        localField: "_id",
+        foreignField: "subject",
+        as: "topics",
+      },
+    },
+    {
+      $unwind: {
+        path: "$topics",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $lookup: {
+        from: "subtopics",
+        localField: "topics._id",
+        foreignField: "topic",
+        as: "topics.subTopics",
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        title: { $first: "$title" },
+        createdAt: { $first: "$createdAt" },
+        updatedAt: { $first: "$updatedAt" },
+        topics: { $push: "$topics" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        id: "$_id",
+        title: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        topics: {
+          $map: {
+            input: "$topics",
+            as: "topics",
+            in: {
+              id: "$$topics._id",
+              title: "$$topics.title",
+              subTopics: {
+                $map: {
+                  input: "$$topics.subTopics",
+                  as: "subTopics",
+                  in: {
+                    id: "$$subTopics._id",
+                    title: "$$subTopics.title",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+   
+  ]);
   res.status(200).json({
     success: true,
     message: "success",
