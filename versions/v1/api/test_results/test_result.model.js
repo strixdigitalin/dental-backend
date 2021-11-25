@@ -35,7 +35,7 @@ const testSchema = Schema(
     totalMarked : Number,
     totalScore : Number
   },
-  { timestamps: true, ...exportConfig }
+  { timestamps: true, }
 );
 
 module.exports = mongoose.model("Test", testSchema);

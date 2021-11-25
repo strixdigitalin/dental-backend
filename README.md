@@ -1,4 +1,4 @@
 # dworld-backend
 
 PostmanCollection
-https://www.getpostman.com/collections/513df250bf4c12c05dff
+https://www.getpostman.com/collections/b8e48d4b8cd0d17f7152

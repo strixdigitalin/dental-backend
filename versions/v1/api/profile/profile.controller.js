@@ -127,56 +127,85 @@ exports.GetAllUsers = async (req, res, next) => {
 
 
 exports.addQuestions = async (req, res, next) => {
-    try {
-        let questions_details = {
-            question: req.body.questionId,
-            isUnanswered: req.body.isUnanswered,
-            isMarked: req.body.isMarked,
-            isIncorrect: req.body.isIncorrect,
-            isCorrect: req.body.isCorrect
+    const questions_details = [
+        {
+            "question": "61939c3b77458c00167a8862",
+            "isUnused": false,
+            "isMarked": true,
+            "isCorrect": true,
+            "isIncorrect": false,
+            "timeSpend" : 20
+        },
+         {
+            "question": "616ea792e9af7500163ae9a2",
+            "isUnused": false,
+            "isMarked": true,
+            "isCorrect": true,
+            "isIncorrect": false,
+            "timeSpend" : 20
         }
-        if (req.body.isMarked == true && req.body.isUnanswered == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unanswered: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    ]
+    const profiles = await Profile.findOne({ user: req.user.id })
+     questions_details.map(async (ques) => {
+        var exist = profiles.question_details.find(x => x.question == ques.question)
+        console.log(exist)
+        if (!exist) {
+            await Profile.findByIdAndUpdate({ _id: profiles._id }, { $push: { "question_details": ques } })
         }
-        else if (req.body.isMarked != true && req.body.isUnanswered == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unanswered: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
-        }
-        else if (req.body.isMarked == true && req.body.isIncorrect == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Incorrect: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
-        }
-        else if (req.body.isMarked != true && req.body.isIncorrect == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Incorrect: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
-        }
-        else if (req.body.isMarked == true && req.body.isCorrect == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Correct: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
-        }
-        else if (req.body.isMarked != true && req.body.isCorrect == true) {
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Correct: 1 } });
-            await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
-        }
+    })
 
-        const profile = await Profile.findOne({ user: req.user.id });
-        console.log(profile)
-        if (!profile) {
-            next(createHttpError.NotFound('No Profile'))
-        }
-        console.log(profile.question_details)
-        profile.question_details.push(questions_details);
-        let questionpush = await profile.save();
-        res.status(200).json({
-            message: "success",
-            data: questionpush
-        })
-    } catch (error) {
-        next(error);
-    }
+
+
+    // try {
+    // let questions_details = {
+    //     question: req.body.questionId,
+    //     isUnanswered: req.body.isUnanswered,
+    //     isMarked: req.body.isMarked,
+    //     isIncorrect: req.body.isIncorrect,
+    //     isCorrect: req.body.isCorrect
+    // }
+    // if (req.body.isMarked == true && req.body.isUnanswered == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unanswered: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+    // else if (req.body.isMarked != true && req.body.isUnanswered == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unanswered: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+    // else if (req.body.isMarked == true && req.body.isIncorrect == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Incorrect: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+    // else if (req.body.isMarked != true && req.body.isIncorrect == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Incorrect: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+    // else if (req.body.isMarked == true && req.body.isCorrect == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Correct: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Marked: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+    // else if (req.body.isMarked != true && req.body.isCorrect == true) {
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Correct: 1 } });
+    //     await Profile.updateOne({ user: req.user.id }, { $inc: { total_Unused: -1 } });
+    // }
+
+    // const profile = await Profile.findOne({ user: req.user.id });
+    // console.log(profile)
+    // if (!profile) {
+    //     next(createHttpError.NotFound('No Profile'))
+    // }
+    // console.log(profile.question_details)
+    // profile.question_details.push(questions_details);
+    // let questionpush = await profile.save();
+    // res.status(200).json({
+    //     message: "success",
+    //     data: questionpush
+    // })
+    // } catch (error) {
+    //     next(error);
+    // }
 
 };
