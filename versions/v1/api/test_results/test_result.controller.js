@@ -175,12 +175,12 @@ exports.topicPerfomance = async (req, res, next) => {
   //   },
 
   // ]);
-  var allQuestions = await questionModel.find({}).populate('subject')
+  var allQuestions = await questionModel.find({}).populate('subject topic topic.subject')
   var profile = await Profile.findOne({ user: req.user.id })
   var profile_questions = profile.question_details
   var allSubjects = await Subject.find({})
   allSubjects.map((subject) => {
-    topic_performance.push(createObject(subject.title,findQuesCountInSubject(profile_questions, subject, allQuestions),"","",""),)
+    topic_performance.push(createObject(subject.title,subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
   })
   res.status(200).json({
     success: true,
@@ -188,31 +188,78 @@ exports.topicPerfomance = async (req, res, next) => {
     data: topic_performance,
   });
 }
+function findTopicsInSubject(profile_questions, subject, question) {
+  var count = 0
+  var usedcount = 0
+  var totalUnanswered = 0
+  var totalCorrect = 0
+  var totalIncorrect = 0
+  var topic = []
+  for (let index = 0; index < question.length; index++) {
+    if (question[index].topic.subject == subject.id) {
+      count++
+      for (let j = 0; j < profile_questions.length; j++) {
+        if (profile_questions[j].question == question[index].id) {
+          usedcount++
+          if (profile_questions[j].isUnanswered) {
+            totalUnanswered++
+          }
+          if (profile_questions[j].isIncorrect) {
+            totalIncorrect++
+          }
+          if (profile_questions[j].isCorrect) {
+            totalCorrect++
+          }
+        }
+
+      }
+      topic.push({
+        id:question[index].topic.id,
+        topic_name: question[index].topic.title, usage: {
+          used_count: usedcount.toString(), total_count: count.toString(), omitted: totalUnanswered, totalIncorrect: totalIncorrect, totalCorrect
+        }
+      })
+    }
+  }
+
+  return topic
+}
+function getTopicusage(profile) {
+
+}
 function findQuesCountInSubject(profile_questions, subject, question) {
   var count = 0
   var usedcount = 0
+  var totalUnanswered = 0
+  var totalCorrect = 0
+  var totalIncorrect = 0
   for (let index = 0; index < question.length; index++) {
     if (question[index].subject.id == subject.id) {
       count++
       for (let j = 0; j < profile_questions.length; j++) {
-        if (profile_questions[j].question == question[index].id) {         
+        if (profile_questions[j].question == question[index].id) {
           usedcount++
+          if (profile_questions[j].isUnanswered) {
+            totalUnanswered++
+          }
+          if (profile_questions[j].isIncorrect) {
+            totalIncorrect++
+          }
+          if (profile_questions[j].isCorrect) {
+            totalCorrect++
+          }
         }
       }
     }
   }
-  return {"used count":usedcount.toString(), "total count": count.toString()}
+  return { used_count: usedcount.toString(), total_count: count.toString(), omitted: totalUnanswered, totalIncorrect: totalIncorrect, totalCorrect }
 }
 
-function CountUsedQuestion(profile_questions, question) {
-  profile_questions.find(x => x.question == question)
-}
-function createObject(subjectName, usage, correct, incorrect, omitted) {
+function createObject(subjectName, id, usage, topic) {
   return {
+    "id": id,
     "subject_name": subjectName,
     "usage": usage,
-    "correct": correct,
-    "incorrect": incorrect,
-    "omitted": omitted
+    "topic": topic
   }
 }
