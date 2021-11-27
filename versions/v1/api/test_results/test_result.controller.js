@@ -175,13 +175,21 @@ exports.topicPerfomance = async (req, res, next) => {
   //   },
 
   // ]);
-  var allQuestions = await questionModel.find({}).populate('subject topic topic.subject')
-  var profile = await Profile.findOne({ user: req.user.id })
-  var profile_questions = profile.question_details
-  var allSubjects = await Subject.find({})
-  allSubjects.map((subject) => {
-    topic_performance.push(createObject(subject.title,subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
-  })
+  var allSubjects = await Subject.find({}).limit(3)
+  var allQuestions;
+
+  for (let index = 0; index < allSubjects.length; index++) {
+    var count = await questionModel.countDocuments({ subject: allSubjects[index].id })
+    topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'counts': count }))
+  }
+  
+
+  // var profile = await Profile.findOne({ user: req.user.id })
+  // var profile_questions = profile.question_details
+
+  // allSubjects.map((subject) => {
+  //   topic_performance.push(createObject(subject.title, subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
+  // })
   res.status(200).json({
     success: true,
     message: "success",
@@ -214,7 +222,7 @@ function findTopicsInSubject(profile_questions, subject, question) {
 
       }
       topic.push({
-        id:question[index].topic.id,
+        id: question[index].topic.id,
         topic_name: question[index].topic.title, usage: {
           used_count: usedcount.toString(), total_count: count.toString(), omitted: totalUnanswered, totalIncorrect: totalIncorrect, totalCorrect
         }
@@ -224,8 +232,13 @@ function findTopicsInSubject(profile_questions, subject, question) {
 
   return topic
 }
-function getTopicusage(profile) {
-
+function getduplicatetopic(topics, singletopic) {
+  for (let index = 0; index < topics.length; index++) {
+    if (topics[index].id == singletopic.id) {
+      return false
+    }
+  }
+  return true
 }
 function findQuesCountInSubject(profile_questions, subject, question) {
   var count = 0
