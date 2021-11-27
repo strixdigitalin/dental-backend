@@ -5,7 +5,7 @@ const questionModel = require("../question/question.model");
 const ObjectId = mongoose.Types.ObjectId;
 const Subject = require("../subjects/subject.model");
 const Profile = require("../profile/profile.model");
-
+const topicModel = require("../topics/topics.model");
 
 exports.createTestResult = (req, res, next) => {
   const testResult = new Test({
@@ -176,16 +176,17 @@ exports.topicPerfomance = async (req, res, next) => {
 
   // ]);
   var allSubjects = await Subject.find({}).limit(3)
-  var allQuestions;
-
+  var profile = await Profile.findOne({ user: req.user.id })
+  var profile_questions = profile.question_details
+  var alltopic = []
   for (let index = 0; index < allSubjects.length; index++) {
     var count = await questionModel.countDocuments({ subject: allSubjects[index].id })
-    topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'counts': count }))
+    var result = await questionModel.find({ subject: allSubjects[index].id }).populate('topic')
+    var allquestion = result.map((detail) => detail.id)
+    var profilequesid = profile_questions.map((data) => data.question)
+    var used_count = allquestion.filter((detail) => profilequesid.includes(detail))
+    topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'used_counts': used_count.length, 'total_counts': count }, alltopic))
   }
-  
-
-  // var profile = await Profile.findOne({ user: req.user.id })
-  // var profile_questions = profile.question_details
 
   // allSubjects.map((subject) => {
   //   topic_performance.push(createObject(subject.title, subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
