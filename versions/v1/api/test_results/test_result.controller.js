@@ -1,5 +1,5 @@
 const Test = require("./test_result.model");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const createError = require("http-errors");
 const questionModel = require("../question/question.model");
 const ObjectId = mongoose.Types.ObjectId;
@@ -20,39 +20,46 @@ exports.createTestResult = (req, res, next) => {
     totalUnanswered: req.body.totalUnanswered,
     totalMarked: req.body.totalMarked,
     totalTimeSpend: req.body.totalTimeSpend,
-    totalScore: parseInt(req.body.totalCorrect) / parseInt(req.body.totalQuestion) * 100
-  })
-  testResult.save()
+    totalScore:
+      (parseInt(req.body.totalCorrect) / parseInt(req.body.totalQuestion)) *
+      100,
+  });
+  testResult
+    .save()
     .then(async (data) => {
-      const testResults = await Test.findOne({ _id: data.id })
-        .populate(
-          {
-            path: 'questions_details.question',
-            populate: {
-              path: 'subject topic subtopic',
-              select: 'title'
-            }
-          }
-        )
-      var questions_details = []
-      questions_details = req.body.questions_details
-      console.log(questions_details)
-      const profiles = await Profile.findOne({ user: req.user.id })
+      const testResults = await Test.findOne({ _id: data.id }).populate({
+        path: "questions_details.question",
+        populate: {
+          path: "subject topic subtopic",
+          select: "title",
+        },
+      });
+      var questions_details = [];
+      questions_details = req.body.questions_details;
+      console.log(questions_details);
+      const profiles = await Profile.findOne({ user: req.user.id });
       questions_details.map(async (ques) => {
-        var exist = profiles.question_details.find(x => x.question == ques.question)
-        console.log(exist)
+        var exist = profiles.question_details.find(
+          (x) => x.question == ques.question
+        );
+        console.log(exist);
         if (!exist) {
-          await Profile.findByIdAndUpdate({ _id: profiles._id }, { $push: { "question_details": ques } })
+          await Profile.findByIdAndUpdate(
+            { _id: profiles._id },
+            { $push: { question_details: ques } }
+          );
         }
-      })
+      });
       res.status(201).json({
         statusCode: 201,
         message: "Created Successfully",
-        data: testResults
+        data: testResults,
       });
-    }).catch(err => { next(err) });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
-
 
 exports.getAllTestResultsUser = async (req, res, next) => {
   try {
@@ -60,19 +67,19 @@ exports.getAllTestResultsUser = async (req, res, next) => {
       {
         $match: {
           user: ObjectId(req.user.id),
-        }
+        },
       },
       {
-        $sort: { createdAt: -1 }
+        $sort: { createdAt: -1 },
       },
       {
         $project: {
           questions_details: 0,
           user: 0,
-          __v: 0
-        }
-      }
-    ])
+          __v: 0,
+        },
+      },
+    ]);
 
     res.status(200).json({
       statusCode: 200,
@@ -86,18 +93,15 @@ exports.getAllTestResultsUser = async (req, res, next) => {
 
 exports.getTestResultsById = async (req, res, next) => {
   try {
-    const testResults = await Test.findOne({ $and: [{ user: req.user.id }, { _id: req.params.id }] })
-      .populate(
-        {
-          path: 'questions_details.question',
-          populate: {
-            path: 'subject topic subtopic',
-            select: 'title'
-          }
-        }
-      )
-
-
+    const testResults = await Test.findOne({
+      $and: [{ user: req.user.id }, { _id: req.params.id }],
+    }).populate({
+      path: "questions_details.question",
+      populate: {
+        path: "subject topic subtopic",
+        select: "title",
+      },
+    });
 
     res.status(200).json({
       statusCode: 200,
@@ -109,9 +113,8 @@ exports.getTestResultsById = async (req, res, next) => {
   }
 };
 
-
 exports.topicPerfomance = async (req, res, next) => {
-  var topic_performance = []
+  var topic_performance = [];
   // const results = await Subject.aggregate([
   //   {
   //     $lookup: {
@@ -175,105 +178,209 @@ exports.topicPerfomance = async (req, res, next) => {
   //   },
 
   // ]);
-  var allSubjects = await Subject.find({}).limit(3)
-  var profile = await Profile.findOne({ user: req.user.id })
-  var profile_questions = profile.question_details
-  var alltopic = []
-  for (let index = 0; index < allSubjects.length; index++) {
-    var count = await questionModel.countDocuments({ subject: allSubjects[index].id })
-    var result = await questionModel.find({ subject: allSubjects[index].id }).populate('topic')
-    var allquestion = result.map((detail) => detail.id)
-    var profilequesid = profile_questions.map((data) => data.question)
-    var used_count = allquestion.filter((detail) => profilequesid.includes(detail))
-    topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'used_counts': used_count.length, 'total_counts': count }, alltopic))
-  }
+  // var allSubjects = await Subject.find({}).limit(4)
+  // var profile = await Profile.findOne({ user: req.user.id })
+  // var profile_questions = profile.question_details
+  // var alltopic = []
+  // for (let index = 0; index < allSubjects.length; index++) {
+  //   var count = await questionModel.countDocuments({ subject: allSubjects[index].id })
+  //   var result = await questionModel.find({ subject: allSubjects[index].id }).populate('topic')
+  //   var allquestion = result.map((detail) => detail.id)
+  //   var profilequesid = profile_questions.map((data) => data.question)
+  //   var used_count = allquestion.filter((detail) => profilequesid.includes(detail))
+  //   topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'used_counts': used_count.length, 'total_counts': count }, alltopic))
+  // }
 
   // allSubjects.map((subject) => {
   //   topic_performance.push(createObject(subject.title, subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
   // })
-  res.status(200).json({
-    success: true,
-    message: "success",
-    data: topic_performance,
-  });
-}
+
+  try {
+    const data = await Profile.aggregate([
+      {
+        $match: {
+          user: ObjectId(req.user.id),
+        },
+      },
+      { $unwind: "$question_details" },
+      { $replaceRoot: { newRoot: "$question_details" } },
+      {
+        $project: {
+          question: 1,
+          isMarked: 1,
+          isCorrect: 1,
+          isUnanswered: 1,
+          isIncorrect: 1,
+          timeSpend: 1,
+        },
+      },
+      {
+        $lookup: {
+          from: "questions",
+          localField: "question",
+          foreignField: "_id",
+          as: "question",
+        },
+      },
+      { $unwind: "$question" },
+      {
+        $project: {
+          isIncorrect: 1,
+          isCorrect: 1,
+          isUnanswered: 1,
+          subject: "$question.subject",
+          topic: "$question.topic",
+          subtopic: "$question.subtopic",
+          questionId: "$question._id",
+        },
+      },
+      // {
+      //   $group: {
+      //     _id: { subject: "$subject" },
+      //     count: {
+      //       $sum: 1,
+      //     },
+      //   },
+      // },
+      {
+        $group: {
+          _id: "$subject",
+          info: {
+            $push: {
+              isIncorrect: "$isIncorrect",
+              isCorrect: "$isCorrect",
+              isUnanswered: "$isUnanswered",
+              topic: "$topic",
+              subtopic: "$subtopic",
+              questionId: "$questionId",
+            },
+          },
+        },
+      },
+    ]);
+
+    const newData = data.map((subject) => {
+      let isIncorrect = 0;
+      let isCorrect = 0;
+      let isUnanswered = 0;
+      let count = 0;
+      subject.info.forEach((question) => {
+        count++;
+        if (question.isIncorrect) {
+          isIncorrect++;
+        }
+        if (question.isCorrect) {
+          isCorrect++;
+        }
+        if (question.isUnanswered) {
+          isUnanswered++;
+        }
+      });
+      return {
+        subjectId: subject._id,
+        isIncorrect,
+        isCorrect,
+        isUnanswered,
+        count,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "success",
+      newData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 function findTopicsInSubject(profile_questions, subject, question) {
-  var count = 0
-  var usedcount = 0
-  var totalUnanswered = 0
-  var totalCorrect = 0
-  var totalIncorrect = 0
-  var topic = []
+  var count = 0;
+  var usedcount = 0;
+  var totalUnanswered = 0;
+  var totalCorrect = 0;
+  var totalIncorrect = 0;
+  var topic = [];
   for (let index = 0; index < question.length; index++) {
     if (question[index].topic.subject == subject.id) {
-      count++
+      count++;
       for (let j = 0; j < profile_questions.length; j++) {
         if (profile_questions[j].question == question[index].id) {
-          usedcount++
+          usedcount++;
           if (profile_questions[j].isUnanswered) {
-            totalUnanswered++
+            totalUnanswered++;
           }
           if (profile_questions[j].isIncorrect) {
-            totalIncorrect++
+            totalIncorrect++;
           }
           if (profile_questions[j].isCorrect) {
-            totalCorrect++
+            totalCorrect++;
           }
         }
-
       }
       topic.push({
         id: question[index].topic.id,
-        topic_name: question[index].topic.title, usage: {
-          used_count: usedcount.toString(), total_count: count.toString(), omitted: totalUnanswered, totalIncorrect: totalIncorrect, totalCorrect
-        }
-      })
+        topic_name: question[index].topic.title,
+        usage: {
+          used_count: usedcount.toString(),
+          total_count: count.toString(),
+          omitted: totalUnanswered,
+          totalIncorrect: totalIncorrect,
+          totalCorrect,
+        },
+      });
     }
   }
 
-  return topic
+  return topic;
 }
 function getduplicatetopic(topics, singletopic) {
   for (let index = 0; index < topics.length; index++) {
     if (topics[index].id == singletopic.id) {
-      return false
+      return false;
     }
   }
-  return true
+  return true;
 }
 function findQuesCountInSubject(profile_questions, subject, question) {
-  var count = 0
-  var usedcount = 0
-  var totalUnanswered = 0
-  var totalCorrect = 0
-  var totalIncorrect = 0
+  var count = 0;
+  var usedcount = 0;
+  var totalUnanswered = 0;
+  var totalCorrect = 0;
+  var totalIncorrect = 0;
   for (let index = 0; index < question.length; index++) {
     if (question[index].subject.id == subject.id) {
-      count++
+      count++;
       for (let j = 0; j < profile_questions.length; j++) {
         if (profile_questions[j].question == question[index].id) {
-          usedcount++
+          usedcount++;
           if (profile_questions[j].isUnanswered) {
-            totalUnanswered++
+            totalUnanswered++;
           }
           if (profile_questions[j].isIncorrect) {
-            totalIncorrect++
+            totalIncorrect++;
           }
           if (profile_questions[j].isCorrect) {
-            totalCorrect++
+            totalCorrect++;
           }
         }
       }
     }
   }
-  return { used_count: usedcount.toString(), total_count: count.toString(), omitted: totalUnanswered, totalIncorrect: totalIncorrect, totalCorrect }
+  return {
+    used_count: usedcount.toString(),
+    total_count: count.toString(),
+    omitted: totalUnanswered,
+    totalIncorrect: totalIncorrect,
+    totalCorrect,
+  };
 }
 
 function createObject(subjectName, id, usage, topic) {
   return {
-    "id": id,
-    "subject_name": subjectName,
-    "usage": usage,
-    "topic": topic
-  }
+    id: id,
+    subject_name: subjectName,
+    usage: usage,
+    topic: topic,
+  };
 }
