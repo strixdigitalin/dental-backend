@@ -8,6 +8,9 @@ const topicsSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subject",
     },
+    questionCount: {
+      type: Number,
+    },
   },
   exportConfig
 );

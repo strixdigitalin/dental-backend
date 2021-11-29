@@ -8,6 +8,9 @@ const subcategorySchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Topics",
     },
+    questionCount: {
+      type: Number,
+    },
   },
   exportConfig
 );

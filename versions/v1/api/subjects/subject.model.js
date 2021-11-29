@@ -8,6 +8,9 @@ const SubjectSchema = Schema(
       type: String,
       required: true,
     },
+    questionCount: {
+      type: Number,
+    },
   },
   { ...exportConfig, timestamps: true }
 );

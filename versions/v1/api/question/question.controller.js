@@ -5,6 +5,9 @@ const mongoose = require("mongoose");
 const createHttpError = require("http-errors");
 const Test = require("../test_results/test_result.model");
 const { result } = require("lodash");
+const subjectModel = require("../subjects/subject.model");
+const topicsModel = require("../topics/topics.model");
+const subtopicsModel = require("../subtopics/subtopics.model");
 const ObjectId = mongoose.Types.ObjectId;
 exports.createQuestion = async (req, res, next) => {
   const question = new Question({
@@ -19,6 +22,16 @@ exports.createQuestion = async (req, res, next) => {
   question
     .save()
     .then((data) => {
+      console.log(data);
+      subjectModel
+        .updateOne({ _id: data.subject }, { $inc: { questionCount: 1 } })
+        .then((d) => {});
+      topicsModel
+        .updateOne({ _id: data.topic }, { $inc: { questionCount: 1 } })
+        .then((d) => {});
+      subtopicsModel
+        .updateOne({ _id: data.subtopic }, { $inc: { questionCount: 1 } })
+        .then((d) => {});
       res
         .status(200)
         .json({ statusCode: 200, success: true, message: "success", question });
@@ -28,24 +41,24 @@ exports.createQuestion = async (req, res, next) => {
     });
 };
 
-exports.getTestExists = async (req,res,next) => {
+exports.getTestExists = async (req, res, next) => {
   try {
-    const TestExist = await Test.countDocuments({user : req.user.id});
-    if(TestExist > 0){
+    const TestExist = await Test.countDocuments({ user: req.user.id });
+    if (TestExist > 0) {
       res.status(200).json({
-        message : "success",
-        exists : true
-      })
-    }else{
+        message: "success",
+        exists: true,
+      });
+    } else {
       res.status(200).json({
-        message : "success",
-        exists : false
-      })
+        message: "success",
+        exists: false,
+      });
     }
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
@@ -55,15 +68,15 @@ exports.getAllQuestionsUser = async (req, res, next) => {
     let newArrSubTopic = [];
     for (let index = 0; index < subtopic.length; index++) {
       const element = subtopic[index];
-      element.toString()
-      let obj = { subtopic: ObjectId(element) }
-      newArrSubTopic.push(obj)
+      element.toString();
+      let obj = { subtopic: ObjectId(element) };
+      newArrSubTopic.push(obj);
     }
     const page = req.query.page || 1;
     const noOfQuestions = req.query.limit;
     const limit = 1 * 1 || 50;
     let count;
-    
+
     if (req.query.filterBy != "all") {
       let cond = [
         {
@@ -80,7 +93,7 @@ exports.getAllQuestionsUser = async (req, res, next) => {
             isCorrect: 1,
             isIncorrect: 1,
             timeSpend: 1,
-          }
+          },
         },
         {
           $match: {
@@ -99,18 +112,18 @@ exports.getAllQuestionsUser = async (req, res, next) => {
         { $replaceRoot: { newRoot: "$question" } },
         {
           $match: {
-            $or: newArrSubTopic
+            $or: newArrSubTopic,
           },
         },
         {
           $project: {
-            __v: 0
-          }
+            __v: 0,
+          },
         },
         {
-          $group : {
-            _id : "$_id"
-          }
+          $group: {
+            _id: "$_id",
+          },
         },
         {
           $lookup: {
@@ -123,44 +136,44 @@ exports.getAllQuestionsUser = async (req, res, next) => {
         { $unwind: "$question" },
         { $replaceRoot: { newRoot: "$question" } },
         { $skip: limit * (page - 1) },
-        { $limit: 1 }
-      ]
-      results = await Test.aggregate(cond)
+        { $limit: 1 },
+      ];
+      results = await Test.aggregate(cond);
       cond.pop();
       cond.pop();
-      count = await Test.aggregate(cond)
-      count = count.length
+      count = await Test.aggregate(cond);
+      count = count.length;
     } else {
       let cond = [
         {
           $match: {
-            $or: newArrSubTopic
+            $or: newArrSubTopic,
           },
         },
         {
           $project: {
-            __v: 0
-          }
+            __v: 0,
+          },
         },
         { $skip: limit * (page - 1) },
-        { $limit: 1 }
-      ]
-      results = await Question.aggregate(cond)
+        { $limit: 1 },
+      ];
+      results = await Question.aggregate(cond);
       cond.pop();
       cond.pop();
-      count = results.length
+      count = results.length;
     }
     res.status(200).json({
       success: true,
       message: "success",
       count,
-      pageCount : parseInt(noOfQuestions),
+      pageCount: parseInt(noOfQuestions),
       data: results,
     });
   } catch (error) {
     next(error);
   }
-}
+};
 
 exports.getAllQuestions = async (req, res, next) => {
   try {
@@ -181,7 +194,7 @@ exports.getAllQuestions = async (req, res, next) => {
     if (subTopicId) findBy.subtopic = subTopicId;
     if (subjectId) findBy.subject = subjectId;
     if (topicId) findBy.topic = topicId;
-    console.log(findBy)
+    console.log(findBy);
     const [questions, count] = await Promise.all([
       Question.find(findBy)
         .sort({ _id: 1 })
@@ -199,7 +212,6 @@ exports.getAllQuestions = async (req, res, next) => {
     next(error);
   }
 };
-
 
 exports.getCategory = async (req, res, next) => {
   console.log(req.query);
@@ -311,10 +323,10 @@ exports.getCategory = async (req, res, next) => {
         // },
       ]);
     }
-    console.log(result)
+    console.log(result);
     res.status(200).json(result);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     next(error);
   }
 };
@@ -346,12 +358,15 @@ exports.addQuestionToCategory = async (req, res, next) => {
 
 exports.getQuestionById = async (req, res, next) => {
   try {
-    const test = await Test.find({ _id: req.params.id })
-      
+    const test = await Test.find({ _id: req.params.id });
+
     let questionId = req.query.questionId;
     let question = test[0].questions_details.find((x) => x.id === questionId);
-    console.log(question)
-    const questions = await Question.find({ _id: question.question }).populate('subject topic subtopic','title');
+    console.log(question);
+    const questions = await Question.find({ _id: question.question }).populate(
+      "subject topic subtopic",
+      "title"
+    );
     res.status(200).json({
       statusCode: 200,
       message: "success",

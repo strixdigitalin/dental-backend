@@ -6,6 +6,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const Subject = require("../subjects/subject.model");
 const Profile = require("../profile/profile.model");
 const topicModel = require("../topics/topics.model");
+const async = require("async");
 
 exports.createTestResult = (req, res, next) => {
   const testResult = new Test({
@@ -114,186 +115,121 @@ exports.getTestResultsById = async (req, res, next) => {
 };
 
 exports.topicPerfomance = async (req, res, next) => {
-  var topic_performance = [];
-  // const results = await Subject.aggregate([
-  //   {
-  //     $lookup: {
-  //       from: "topics",
-  //       localField: "_id",
-  //       foreignField: "subject",
-  //       as: "topics",
-  //     },
-  //   },
-  //   {
-  //     $unwind: {
-  //       path: "$topics",
-  //       preserveNullAndEmptyArrays: false,
-  //     },
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "subtopics",
-  //       localField: "topics._id",
-  //       foreignField: "topic",
-  //       as: "topics.subTopics",
-  //     },
-  //   },
-  //   {
-  //     $group: {
-  //       _id: "$_id",
-  //       title: { $first: "$title" },
-  //       createdAt: { $first: "$createdAt" },
-  //       updatedAt: { $first: "$updatedAt" },
-  //       topics: { $push: "$topics" },
-  //     },
-  //   },
-  //   {
-  //     $project: {
-  //       _id: 0,
-  //       id: "$_id",
-  //       title: 1,
-  //       createdAt: 1,
-  //       updatedAt: 1,
-  //       topics: {
-  //         $map: {
-  //           input: "$topics",
-  //           as: "topics",
-  //           in: {
-  //             id: "$$topics._id",
-  //             title: "$$topics.title",
-  //             subTopics: {
-  //               $map: {
-  //                 input: "$$topics.subTopics",
-  //                 as: "subTopics",
-  //                 in: {
-  //                   id: "$$subTopics._id",
-  //                   title: "$$subTopics.title",
-  //                 },
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-
-  // ]);
-  // var allSubjects = await Subject.find({}).limit(4)
-  // var profile = await Profile.findOne({ user: req.user.id })
-  // var profile_questions = profile.question_details
-  // var alltopic = []
-  // for (let index = 0; index < allSubjects.length; index++) {
-  //   var count = await questionModel.countDocuments({ subject: allSubjects[index].id })
-  //   var result = await questionModel.find({ subject: allSubjects[index].id }).populate('topic')
-  //   var allquestion = result.map((detail) => detail.id)
-  //   var profilequesid = profile_questions.map((data) => data.question)
-  //   var used_count = allquestion.filter((detail) => profilequesid.includes(detail))
-  //   topic_performance.push(createObject(allSubjects[index].title, allSubjects[index].id, { 'used_counts': used_count.length, 'total_counts': count }, alltopic))
-  // }
-
-  // allSubjects.map((subject) => {
-  //   topic_performance.push(createObject(subject.title, subject.id, findQuesCountInSubject(profile_questions, subject, allQuestions), findTopicsInSubject(profile_questions, subject, allQuestions)))
-  // })
-
   try {
-    const data = await Profile.aggregate([
-      {
-        $match: {
-          user: ObjectId(req.user.id),
-        },
-      },
-      { $unwind: "$question_details" },
-      { $replaceRoot: { newRoot: "$question_details" } },
-      {
-        $project: {
-          question: 1,
-          isMarked: 1,
-          isCorrect: 1,
-          isUnanswered: 1,
-          isIncorrect: 1,
-          timeSpend: 1,
-        },
-      },
-      {
-        $lookup: {
-          from: "questions",
-          localField: "question",
-          foreignField: "_id",
-          as: "question",
-        },
-      },
-      { $unwind: "$question" },
-      {
-        $project: {
-          isIncorrect: 1,
-          isCorrect: 1,
-          isUnanswered: 1,
-          subject: "$question.subject",
-          topic: "$question.topic",
-          subtopic: "$question.subtopic",
-          questionId: "$question._id",
-        },
-      },
-      // {
-      //   $group: {
-      //     _id: { subject: "$subject" },
-      //     count: {
-      //       $sum: 1,
-      //     },
-      //   },
-      // },
-      {
-        $group: {
-          _id: "$subject",
-          info: {
-            $push: {
-              isIncorrect: "$isIncorrect",
-              isCorrect: "$isCorrect",
-              isUnanswered: "$isUnanswered",
-              topic: "$topic",
-              subtopic: "$subtopic",
-              questionId: "$questionId",
+    async.parallel(
+      [
+        function (callback) {
+          Subject.aggregate([
+            {
+              $lookup: {
+                from: "topics",
+                localField: "_id",
+                foreignField: "subject",
+                as: "topics",
+              },
             },
-          },
+            {
+              $unwind: {
+                path: "$topics",
+                preserveNullAndEmptyArrays: false,
+              },
+            },
+            {
+              $lookup: {
+                from: "subtopics",
+                localField: "topics._id",
+                foreignField: "topic",
+                as: "topics.subTopics",
+              },
+            },
+            {
+              $group: {
+                _id: "$_id",
+                title: { $first: "$title" },
+                questionCount: { $first: "$questionCount" },
+                createdAt: { $first: "$createdAt" },
+                updatedAt: { $first: "$updatedAt" },
+                topics: { $push: "$topics" },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                id: "$_id",
+                title: 1,
+                questionCount: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                topics: {
+                  $map: {
+                    input: "$topics",
+                    as: "topics",
+                    in: {
+                      id: "$$topics._id",
+                      title: "$$topics.title",
+                      questionCount: "$$topics.questionCount",
+                      subTopics: {
+                        $map: {
+                          input: "$$topics.subTopics",
+                          as: "subTopics",
+                          in: {
+                            id: "$$subTopics._id",
+                            title: "$$subTopics.title",
+                            questionCount: "$$subTopics.questionCount",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ]).exec((err, subjects) => {
+            // const newData = subjects.map((subject) => {
+            //   let isIncorrect = 0;
+            //   let isCorrect = 0;
+            //   let isUnanswered = 0;
+            //   let count = 0;
+            //   subject.info.forEach((question) => {
+            //     count++;
+            //     if (question.isIncorrect) {
+            //       isIncorrect++;
+            //     }
+            //     if (question.isCorrect) {
+            //       isCorrect++;
+            //     }
+            //     if (question.isUnanswered) {
+            //       isUnanswered++;
+            //     }
+            //   });
+            //   return {
+            //     subjectId: subject._id,
+            //     isIncorrect,
+            //     isCorrect,
+            //     isUnanswered,
+            //     count,
+            //   };
+            // });
+            callback(err, subjects);
+          });
         },
-      },
-    ]);
-
-    const newData = data.map((subject) => {
-      let isIncorrect = 0;
-      let isCorrect = 0;
-      let isUnanswered = 0;
-      let count = 0;
-      subject.info.forEach((question) => {
-        count++;
-        if (question.isIncorrect) {
-          isIncorrect++;
-        }
-        if (question.isCorrect) {
-          isCorrect++;
-        }
-        if (question.isUnanswered) {
-          isUnanswered++;
-        }
-      });
-      return {
-        subjectId: subject._id,
-        isIncorrect,
-        isCorrect,
-        isUnanswered,
-        count,
-      };
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "success",
-      newData,
-    });
+      ],
+      function (err, result) {
+        console.log(err);
+        if (err) return next(err);
+        let subjects = result[0];
+        res.status(200).json({
+          statusCode: 200,
+          message: "success",
+          data: subjects,
+        });
+      }
+    );
   } catch (error) {
     next(error);
   }
 };
+
 function findTopicsInSubject(profile_questions, subject, question) {
   var count = 0;
   var usedcount = 0;
