@@ -116,7 +116,7 @@ exports.getTestResultsById = async (req, res, next) => {
 
 exports.topicPerfomance = async (req, res, next) => {
   try {
-    async.parallel(
+    async.waterfall(
       [
         function (callback) {
           Subject.aggregate([
@@ -210,14 +210,22 @@ exports.topicPerfomance = async (req, res, next) => {
             //     count,
             //   };
             // });
-            callback(err, subjects);
+            const newData = subjects.map((data) => {
+              return {
+                id: data.id,
+                title: data.title,
+                total: data.questionCount,
+                topics: data.topics
+              }
+            })
+            callback(null,newData);
           });
-        },
+        }
       ],
       function (err, result) {
-        console.log(err);
+        console.log(err)
         if (err) return next(err);
-        let subjects = result[0];
+        let subjects = result;
         res.status(200).json({
           statusCode: 200,
           message: "success",
