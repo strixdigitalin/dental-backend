@@ -11,6 +11,30 @@ const subcategorySchema = mongoose.Schema(
     questionCount: {
       type: Number,
     },
+    user: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        question: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Question",
+        },
+        isCorrect: {
+          type: Boolean,
+        },
+        isIncorrect: {
+          type: Boolean,
+        },
+        isUnanswered: {
+          type: Boolean,
+        },
+        isMarked: {
+          type: Boolean,
+        },
+      },
+    ],
   },
   exportConfig
 );

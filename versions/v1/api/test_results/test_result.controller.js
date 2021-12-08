@@ -7,6 +7,8 @@ const Subject = require("../subjects/subject.model");
 const Profile = require("../profile/profile.model");
 const topicModel = require("../topics/topics.model");
 const async = require("async");
+const subtopicsModel = require("../subtopics/subtopics.model");
+var differenceBy = require("lodash.differenceby");
 
 exports.createTestResult = (req, res, next) => {
   const testResult = new Test({
@@ -14,6 +16,9 @@ exports.createTestResult = (req, res, next) => {
     test_name: req.body.test_name,
     mode: req.body.mode,
     user: req.user.id,
+    subjects: req.body.subjectId,
+    subTopics: req.body.subTopicId,
+    topics: req.body.topicId,
     questions_details: req.body.questions_details,
     totalQuestion: req.body.totalQuestion,
     totalIncorrect: req.body.totalIncorrect,
@@ -37,20 +42,122 @@ exports.createTestResult = (req, res, next) => {
       });
       var questions_details = [];
       questions_details = req.body.questions_details;
-      console.log(questions_details);
+      // console.log(questions_details);
       const profiles = await Profile.findOne({ user: req.user.id });
       questions_details.map(async (ques) => {
         var exist = profiles.question_details.find(
           (x) => x.question == ques.question
         );
-        console.log(exist);
+        // console.log(exist);
         if (!exist) {
           await Profile.findByIdAndUpdate(
             { _id: profiles._id },
             { $push: { question_details: ques } }
           );
         }
+        ques["userId"] = req.user.id;
+        // console.log(ques);
       });
+      // console.log(questions_details);
+
+      //subject
+      let subject = req.body.subjectId;
+      subject.map(async (subject) => {
+        // console.log(subject);
+        questions_details.map((question) => {
+          questionModel.findById(question.question).then((data) => {
+            // console.log(data);
+            Subject.findByIdAndUpdate(
+              { _id: ObjectId(data.subject) },
+              {
+                $pull: {
+                  user: {
+                    $and: [
+                      { userId: req.user.id },
+                      { question: question.question },
+                    ],
+                  },
+                },
+              }
+            ).then((result) => {});
+            Subject.findByIdAndUpdate(
+              { _id: ObjectId(data.subject) },
+              { $push: { user: question } }
+            ).then((result) => {});
+          });
+        });
+      });
+
+      //topic
+      // let topic = req.body.topicId;
+      // topic.map(async (topic) => {
+      //   console.log(topic);
+      //   topicModel.find({ _id: topic }).then((result) => {
+      //     // console.log(result[0]);
+      //     let data = result[0];
+      //     if (data.user.length > 0) {
+      //       questions_details.map((questions) => {
+      //         topicModel
+      //           .findByIdAndUpdate(
+      //             { _id: topic },
+      //             {
+      //               $pull: {
+      //                 user: {
+      //                   $and: [
+      //                     { userId: questions.userId },
+      //                     { question: questions.question },
+      //                   ],
+      //                 },
+      //               },
+      //             }
+      //           )
+      //           .then((result) => {});
+      //       });
+      //     }
+      //   });
+      //   topicModel
+      //     .findByIdAndUpdate(
+      //       { _id: topic },
+      //       { $push: { user: questions_details } }
+      //     )
+      //     .then((result) => {});
+      // });
+
+      //subtopic
+      // let subtopic = req.body.subTopicId;
+      // subtopic.map(async (subtopic) => {
+      //   console.log(subtopic);
+      //   subtopicsModel.find({ _id: subtopic }).then((result) => {
+      //     // console.log(result[0]);
+      //     let data = result[0];
+      //     if (data.user.length > 0) {
+      //       questions_details.map((questions) => {
+      //         subtopicsModel
+      //           .findByIdAndUpdate(
+      //             { _id: subtopic },
+      //             {
+      //               $pull: {
+      //                 user: {
+      //                   $and: [
+      //                     { userId: questions.userId },
+      //                     { question: questions.question },
+      //                   ],
+      //                 },
+      //               },
+      //             }
+      //           )
+      //           .then((result) => {});
+      //       });
+      //     }
+      //   });
+      //   subtopicsModel
+      //     .findByIdAndUpdate(
+      //       { _id: subtopic },
+      //       { $push: { user: questions_details } }
+      //     )
+      //     .then((result) => {});
+      // });
+
       res.status(201).json({
         statusCode: 201,
         message: "Created Successfully",
@@ -116,7 +223,7 @@ exports.getTestResultsById = async (req, res, next) => {
 
 exports.topicPerfomance = async (req, res, next) => {
   try {
-    async.waterfall(
+    async.parallel(
       [
         function (callback) {
           Subject.aggregate([
@@ -146,6 +253,7 @@ exports.topicPerfomance = async (req, res, next) => {
               $group: {
                 _id: "$_id",
                 title: { $first: "$title" },
+                user: { $first: "$user" },
                 questionCount: { $first: "$questionCount" },
                 createdAt: { $first: "$createdAt" },
                 updatedAt: { $first: "$updatedAt" },
@@ -157,6 +265,7 @@ exports.topicPerfomance = async (req, res, next) => {
                 _id: 0,
                 id: "$_id",
                 title: 1,
+                user: 1,
                 questionCount: 1,
                 createdAt: 1,
                 updatedAt: 1,
@@ -168,6 +277,7 @@ exports.topicPerfomance = async (req, res, next) => {
                       id: "$$topics._id",
                       title: "$$topics.title",
                       questionCount: "$$topics.questionCount",
+                      user: "$$topics.user",
                       subTopics: {
                         $map: {
                           input: "$$topics.subTopics",
@@ -176,6 +286,7 @@ exports.topicPerfomance = async (req, res, next) => {
                             id: "$$subTopics._id",
                             title: "$$subTopics.title",
                             questionCount: "$$subTopics.questionCount",
+                            user: "$$subTopics.user",
                           },
                         },
                       },
@@ -184,48 +295,110 @@ exports.topicPerfomance = async (req, res, next) => {
                 },
               },
             },
+            { $sort: { questionCount: -1 } },
           ]).exec((err, subjects) => {
-            // const newData = subjects.map((subject) => {
-            //   let isIncorrect = 0;
-            //   let isCorrect = 0;
-            //   let isUnanswered = 0;
-            //   let count = 0;
-            //   subject.info.forEach((question) => {
-            //     count++;
-            //     if (question.isIncorrect) {
-            //       isIncorrect++;
-            //     }
-            //     if (question.isCorrect) {
-            //       isCorrect++;
-            //     }
-            //     if (question.isUnanswered) {
-            //       isUnanswered++;
-            //     }
-            //   });
-            //   return {
-            //     subjectId: subject._id,
-            //     isIncorrect,
-            //     isCorrect,
-            //     isUnanswered,
-            //     count,
-            //   };
-            // });
-            const newData = subjects.map((data) => {
+            // console.log(subjects);
+            const newData = subjects.map((subject) => {
+              let isIncorrect = 0;
+              let isCorrect = 0;
+              let isUnanswered = 0;
+              let count = 0;
+              // console.log(subject);
+              subject.user.forEach((user) => {
+                // console.log(user);
+                count++;
+                if (user.isIncorrect) {
+                  isIncorrect++;
+                }
+                if (user.isCorrect) {
+                  isCorrect++;
+                }
+                if (user.isUnanswered) {
+                  isUnanswered++;
+                }
+              });
+
+              const topics = subject.topics.map((topic) => {
+                let isIncorrect = 0;
+                let isCorrect = 0;
+                let isUnanswered = 0;
+                let count = 0;
+                console.log(topic);
+                topic.user.forEach((user) => {
+                  // console.log(user);
+                  count++;
+                  if (user.isIncorrect) {
+                    isIncorrect++;
+                  }
+                  if (user.isCorrect) {
+                    isCorrect++;
+                  }
+                  if (user.isUnanswered) {
+                    isUnanswered++;
+                  }
+                });
+                const subTopic = topic.subTopics.map((subtopic) => {
+                  let isIncorrect = 0;
+                  let isCorrect = 0;
+                  let isUnanswered = 0;
+                  let count = 0;
+                  console.log(topic);
+                  subtopic.user.forEach((user) => {
+                    // console.log(user);
+                    count++;
+                    if (user.isIncorrect) {
+                      isIncorrect++;
+                    }
+                    if (user.isCorrect) {
+                      isCorrect++;
+                    }
+                    if (user.isUnanswered) {
+                      isUnanswered++;
+                    }
+                  });
+                  return {
+                    _id: subtopic.id,
+                    title: subtopic.title,
+                    totalQuestion: topic.questionCount,
+                    isIncorrect,
+                    isCorrect,
+                    isUnanswered,
+                    count,
+                  };
+                });
+                return {
+                  _id: topic.id,
+                  title: topic.title,
+                  subTopics: subTopic,
+                  totalQuestion: topic.questionCount,
+                  isIncorrect,
+                  isCorrect,
+                  isUnanswered,
+                  count,
+                };
+              });
               return {
-                id: data.id,
-                title: data.title,
-                total: data.questionCount,
-                topics: data.topics
-              }
-            })
-            callback(null,newData);
+                subject: {
+                  _id: subject.id,
+                  title: subject.title,
+                  totalQuestion: subject.questionCount,
+                  topics: topics,
+                  isIncorrect,
+                  isCorrect,
+                  isUnanswered,
+                  count,
+                },
+              };
+            });
+            callback(err, newData);
           });
-        }
+        },
       ],
       function (err, result) {
-        console.log(err)
+        console.log(err);
         if (err) return next(err);
-        let subjects = result;
+        let subjects = result[0];
+
         res.status(200).json({
           statusCode: 200,
           message: "success",

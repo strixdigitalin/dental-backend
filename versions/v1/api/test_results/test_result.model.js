@@ -6,36 +6,47 @@ const testSchema = Schema(
   {
     test_name: {
       type: String,
-      required: true
+      required: true,
     },
     mode: {
       type: String,
-      enum: ['LEARNING', 'TEST'],
+      enum: ["LEARNING", "TEST"],
     },
-    user : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'User'
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-    questions_details : [{
-     question : {
-      type : mongoose.Schema.Types.ObjectId,
-      ref : 'Question'
-     },
-     isCorrect : Boolean,
-     isIncorrect : Boolean,
-     isMarked : Boolean,
-     isUnanswered : Boolean,
-     timeSpend : Number
-    }],
-    totalIncorrect : Number,
-    totalQuestion : Number,
-    totalCorrect : Number,
-    totalUnanswered : Number,
-    totalTimeSpend : Number,
-    totalMarked : Number,
-    totalScore : Number
+    subjects: {
+      type: Array,
+    },
+    subTopics: {
+      type: Array,
+    },
+    topics: {
+      type: Array,
+    },
+    questions_details: [
+      {
+        question: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Question",
+        },
+        isCorrect: Boolean,
+        isIncorrect: Boolean,
+        isMarked: Boolean,
+        isUnanswered: Boolean,
+        timeSpend: Number,
+      },
+    ],
+    totalIncorrect: Number,
+    totalQuestion: Number,
+    totalCorrect: Number,
+    totalUnanswered: Number,
+    totalTimeSpend: Number,
+    totalMarked: Number,
+    totalScore: Number,
   },
-  { timestamps: true, }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Test", testSchema);
