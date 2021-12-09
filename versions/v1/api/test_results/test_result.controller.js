@@ -61,32 +61,34 @@ exports.createTestResult = (req, res, next) => {
       // console.log(questions_details);
 
       //subject
-      let subject = req.body.subjectId;
-      subject.map(async (subject) => {
-        // console.log(subject);
-        questions_details.map((question) => {
-          questionModel.findById(question.question).then((data) => {
-            // console.log(data);
-            Subject.findByIdAndUpdate(
-              { _id: ObjectId(data.subject) },
-              {
-                $pull: {
-                  user: {
-                    $and: [
-                      { userId: req.user.id },
-                      { question: question.question },
-                    ],
-                  },
-                },
-              }
-            ).then((result) => {});
-            Subject.findByIdAndUpdate(
-              { _id: ObjectId(data.subject) },
-              { $push: { user: question } }
-            ).then((result) => {});
-          });
-        });
-      });
+
+      // subject.map(async (subject) => {
+      //   // console.log(subject);
+      //   questions_details.map((question) => {
+      //     questionModel.findById(question.question).then((data) => {
+      //       // console.log(data);
+
+      //       Subject.findByIdAndUpdate(
+      //         { _id: data.subject },
+      //         {
+      //           $pull: {
+      //             user: {
+      //               $and: [
+      //                 { userId: question.userId },
+      //                 { question: question.question },
+      //               ],
+      //             },
+      //           },
+      //         }
+      //       ).then((result) => {
+      //         Subject.findByIdAndUpdate(
+      //           { _id: ObjectId(result.id) },
+      //           { $push: { user: question } }
+      //         ).then((result) => {});
+      //       });
+      //     });
+      //   });
+      // });
 
       //topic
       // let topic = req.body.topicId;
