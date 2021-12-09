@@ -62,103 +62,140 @@ exports.createTestResult = (req, res, next) => {
 
       //subject
 
-      // subject.map(async (subject) => {
-      //   // console.log(subject);
-      //   questions_details.map((question) => {
-      //     questionModel.findById(question.question).then((data) => {
-      //       // console.log(data);
-
-      //       Subject.findByIdAndUpdate(
-      //         { _id: data.subject },
-      //         {
-      //           $pull: {
-      //             user: {
-      //               $and: [
-      //                 { userId: question.userId },
-      //                 { question: question.question },
-      //               ],
-      //             },
-      //           },
-      //         }
-      //       ).then((result) => {
-      //         Subject.findByIdAndUpdate(
-      //           { _id: ObjectId(result.id) },
-      //           { $push: { user: question } }
-      //         ).then((result) => {});
-      //       });
-      //     });
-      //   });
-      // });
+      // console.log(subject);
+      questions_details.forEach((question) => {
+        questionModel.findById(question.question).then((data) => {
+          // console.log(data);
+          Subject.findOne({ _id: data.subject }).then((subject) => {
+            var user = subject.user;
+            if (user.length == 0) {
+              Subject.findByIdAndUpdate(
+                { _id: ObjectId(data.subject) },
+                { $push: { user: question } }
+              ).then((result) => {});
+            }
+            if (user.length > 0) {
+              Subject.findOneAndUpdate(
+                {
+                  _id: ObjectId(data.subject),
+                  "user.question": question.question,
+                  "user.userId": req.user.id,
+                },
+                {
+                  $pull: {
+                    user: {
+                      $and: [
+                        { userId: req.user.id },
+                        { question: question.question },
+                      ],
+                    },
+                  },
+                },
+                { returnDocument: "after" }
+              ).then((result) => {
+                Subject.findByIdAndUpdate(
+                  { _id: ObjectId(data.subject) },
+                  { $push: { user: question } }
+                ).then((result) => {});
+              });
+            }
+          });
+        });
+      });
 
       //topic
-      // let topic = req.body.topicId;
-      // topic.map(async (topic) => {
-      //   console.log(topic);
-      //   topicModel.find({ _id: topic }).then((result) => {
-      //     // console.log(result[0]);
-      //     let data = result[0];
-      //     if (data.user.length > 0) {
-      //       questions_details.map((questions) => {
-      //         topicModel
-      //           .findByIdAndUpdate(
-      //             { _id: topic },
-      //             {
-      //               $pull: {
-      //                 user: {
-      //                   $and: [
-      //                     { userId: questions.userId },
-      //                     { question: questions.question },
-      //                   ],
-      //                 },
-      //               },
-      //             }
-      //           )
-      //           .then((result) => {});
-      //       });
-      //     }
-      //   });
-      //   topicModel
-      //     .findByIdAndUpdate(
-      //       { _id: topic },
-      //       { $push: { user: questions_details } }
-      //     )
-      //     .then((result) => {});
-      // });
+      questions_details.forEach((question) => {
+        questionModel.findById(question.question).then((data) => {
+          // console.log(data);
+          topicModel.findOne({ _id: data.topic }).then((topic) => {
+            var user = topic.user;
+            if (user.length == 0) {
+              topicModel
+                .findByIdAndUpdate(
+                  { _id: ObjectId(data.topic) },
+                  { $push: { user: question } }
+                )
+                .then((result) => {});
+            }
+            if (user.length > 0) {
+              topicModel
+                .findOneAndUpdate(
+                  {
+                    _id: ObjectId(data.topic),
+                    "user.question": question.question,
+                    "user.userId": req.user.id,
+                  },
+                  {
+                    $pull: {
+                      user: {
+                        $and: [
+                          { userId: req.user.id },
+                          { question: question.question },
+                        ],
+                      },
+                    },
+                  },
+                  { returnDocument: "after" }
+                )
+                .then((result) => {
+                  topicModel
+                    .findByIdAndUpdate(
+                      { _id: ObjectId(data.topic) },
+                      { $push: { user: question } }
+                    )
+                    .then((result) => {});
+                });
+            }
+          });
+        });
+      });
 
       //subtopic
-      // let subtopic = req.body.subTopicId;
-      // subtopic.map(async (subtopic) => {
-      //   console.log(subtopic);
-      //   subtopicsModel.find({ _id: subtopic }).then((result) => {
-      //     // console.log(result[0]);
-      //     let data = result[0];
-      //     if (data.user.length > 0) {
-      //       questions_details.map((questions) => {
-      //         subtopicsModel
-      //           .findByIdAndUpdate(
-      //             { _id: subtopic },
-      //             {
-      //               $pull: {
-      //                 user: {
-      //                   $and: [
-      //                     { userId: questions.userId },
-      //                     { question: questions.question },
-      //                   ],
-      //                 },
-      //               },
-      //             }
-      //           )
-      //           .then((result) => {});
-      //       });
-      //     }
-      //   });
-      //   subtopicsModel
-      //     .findByIdAndUpdate(
-      //       { _id: subtopic },
-      //       { $push: { user: questions_details } }
-      //     )
-      //     .then((result) => {});
-      // });
+      questions_details.forEach((question) => {
+        questionModel.findById(question.question).then((data) => {
+          // console.log(data);
+          subtopicsModel.findOne({ _id: data.subtopic }).then((subtopic) => {
+            var user = subtopic.user;
+            if (user.length == 0) {
+              subtopicsModel
+                .findByIdAndUpdate(
+                  { _id: ObjectId(data.subtopic) },
+                  { $push: { user: question } }
+                )
+                .then((result) => {});
+            }
+            if (user.length > 0) {
+              subtopicsModel
+                .findOneAndUpdate(
+                  {
+                    _id: ObjectId(data.subtopic),
+                    "user.question": question.question,
+                    "user.userId": req.user.id,
+                  },
+                  {
+                    $pull: {
+                      user: {
+                        $and: [
+                          { userId: req.user.id },
+                          { question: question.question },
+                        ],
+                      },
+                    },
+                  },
+                  { returnDocument: "after" }
+                )
+                .then((result) => {
+                  subtopicsModel
+                    .findByIdAndUpdate(
+                      { _id: ObjectId(data.subtopic) },
+                      { $push: { user: question } }
+                    )
+                    .then((result) => {});
+                });
+            }
+          });
+        });
+      });
 
       res.status(201).json({
         statusCode: 201,
@@ -325,7 +362,7 @@ exports.topicPerfomance = async (req, res, next) => {
                 let isCorrect = 0;
                 let isUnanswered = 0;
                 let count = 0;
-                console.log(topic);
+
                 topic.user.forEach((user) => {
                   // console.log(user);
                   count++;
@@ -344,7 +381,7 @@ exports.topicPerfomance = async (req, res, next) => {
                   let isCorrect = 0;
                   let isUnanswered = 0;
                   let count = 0;
-                  console.log(topic);
+
                   subtopic.user.forEach((user) => {
                     // console.log(user);
                     count++;
@@ -361,7 +398,7 @@ exports.topicPerfomance = async (req, res, next) => {
                   return {
                     _id: subtopic.id,
                     title: subtopic.title,
-                    totalQuestion: topic.questionCount,
+                    totalQuestion: subtopic.questionCount,
                     isIncorrect,
                     isCorrect,
                     isUnanswered,
@@ -412,94 +449,3 @@ exports.topicPerfomance = async (req, res, next) => {
     next(error);
   }
 };
-
-function findTopicsInSubject(profile_questions, subject, question) {
-  var count = 0;
-  var usedcount = 0;
-  var totalUnanswered = 0;
-  var totalCorrect = 0;
-  var totalIncorrect = 0;
-  var topic = [];
-  for (let index = 0; index < question.length; index++) {
-    if (question[index].topic.subject == subject.id) {
-      count++;
-      for (let j = 0; j < profile_questions.length; j++) {
-        if (profile_questions[j].question == question[index].id) {
-          usedcount++;
-          if (profile_questions[j].isUnanswered) {
-            totalUnanswered++;
-          }
-          if (profile_questions[j].isIncorrect) {
-            totalIncorrect++;
-          }
-          if (profile_questions[j].isCorrect) {
-            totalCorrect++;
-          }
-        }
-      }
-      topic.push({
-        id: question[index].topic.id,
-        topic_name: question[index].topic.title,
-        usage: {
-          used_count: usedcount.toString(),
-          total_count: count.toString(),
-          omitted: totalUnanswered,
-          totalIncorrect: totalIncorrect,
-          totalCorrect,
-        },
-      });
-    }
-  }
-
-  return topic;
-}
-function getduplicatetopic(topics, singletopic) {
-  for (let index = 0; index < topics.length; index++) {
-    if (topics[index].id == singletopic.id) {
-      return false;
-    }
-  }
-  return true;
-}
-function findQuesCountInSubject(profile_questions, subject, question) {
-  var count = 0;
-  var usedcount = 0;
-  var totalUnanswered = 0;
-  var totalCorrect = 0;
-  var totalIncorrect = 0;
-  for (let index = 0; index < question.length; index++) {
-    if (question[index].subject.id == subject.id) {
-      count++;
-      for (let j = 0; j < profile_questions.length; j++) {
-        if (profile_questions[j].question == question[index].id) {
-          usedcount++;
-          if (profile_questions[j].isUnanswered) {
-            totalUnanswered++;
-          }
-          if (profile_questions[j].isIncorrect) {
-            totalIncorrect++;
-          }
-          if (profile_questions[j].isCorrect) {
-            totalCorrect++;
-          }
-        }
-      }
-    }
-  }
-  return {
-    used_count: usedcount.toString(),
-    total_count: count.toString(),
-    omitted: totalUnanswered,
-    totalIncorrect: totalIncorrect,
-    totalCorrect,
-  };
-}
-
-function createObject(subjectName, id, usage, topic) {
-  return {
-    id: id,
-    subject_name: subjectName,
-    usage: usage,
-    topic: topic,
-  };
-}
