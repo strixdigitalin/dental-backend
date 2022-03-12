@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const MyError = require("../../error/MyError");
 const SubTopic = require("./subtopics.model");
-
+const createError = require("http-errors");
 exports.postSubtopic = (req, res, next) => {
   const subcategory = new SubTopic({
     _id: new mongoose.Types.ObjectId(),
@@ -59,6 +59,32 @@ exports.getAllSubTopics = async (req, res, next) => {
       count,
       data: topics,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.update = async (req, res, next) => {
+  const body = req.body || {};
+  const id = req.params.id;
+  try {
+    if (!id) throw createError.NotFound("Id Is Required");
+    if (Object.keys(body).length == 0)
+      throw createError.NotAcceptable("Body Is Empty");
+    var exist = await SubTopic.findOne({ _id: id });
+    if (!exist) throw createError.NotFound("NOT FOUND");
+    SubTopic.findOneAndUpdate(
+      { _id: id },
+      { $set: body },
+      { returnOriginal: false },
+      (err, doc) => {
+        if (err) throw createError.NotFound("NOT FOUND");
+        res.status(200).json({
+          message: "Update Successfully",
+          data: doc,
+        });
+      }
+    );
   } catch (error) {
     next(error);
   }

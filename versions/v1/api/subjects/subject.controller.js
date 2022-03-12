@@ -1,6 +1,8 @@
 const Subject = require("./subject.model");
 const MyError = require("../../error/MyError");
 const mongoose = require("mongoose");
+const async = require("async");
+const createError = require("http-errors");
 
 exports.getAllSubjects = async (req, res, next) => {
   try {
@@ -30,8 +32,6 @@ exports.getAllSubjects = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 exports.getSubjectDetails = async (req, res, next) => {
   try {
@@ -97,8 +97,8 @@ exports.getSubjectDetails = async (req, res, next) => {
         },
       },
       {
-        $sort : {createdAt : -1}
-      }
+        $sort: { createdAt: -1 },
+      },
     ]);
 
     res.status(200).json({
@@ -128,4 +128,30 @@ exports.createSubject = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.update = async (req, res, next) => {
+  const body = req.body || {};
+  const id = req.params.id;
+  try {
+    if (!id) throw createError.NotFound("Id Is Required");
+    if (Object.keys(body).length == 0)
+      throw createError.NotAcceptable("Body Is Empty");
+    var exist = await Subject.findOne({ _id: id });
+    if (!exist) throw createError.NotFound("NOT FOUND");
+    Subject.findOneAndUpdate(
+      { _id: id },
+      { $set: body },
+      { returnOriginal: false },
+      (err, doc) => {
+        if (err) throw createError.NotFound("NOT FOUND");
+        res.status(200).json({
+          message: "Update Successfully",
+          data: doc,
+        });
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
 };

@@ -379,3 +379,29 @@ exports.getQuestionById = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.update = async (req, res, next) => {
+  const body = req.body || {};
+  const id = req.params.id;
+  try {
+    if (!id) throw createHttpError.NotFound("Id Is Required");
+    if (Object.keys(body).length == 0)
+      throw createHttpError.NotAcceptable("Body Is Empty");
+    var exist = await Question.findOne({ _id: id });
+    if (!exist) throw createHttpError.NotFound("NOT FOUND");
+    Question.findOneAndUpdate(
+      { _id: id },
+      { $set: body },
+      { returnOriginal: false },
+      (err, doc) => {
+        if (err) throw createHttpError.NotFound("NOT FOUND");
+        res.status(200).json({
+          message: "Update Successfully",
+          data: doc,
+        });
+      }
+    );
+  } catch (error) {
+    next(error);
+  }
+};

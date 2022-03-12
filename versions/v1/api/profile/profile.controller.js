@@ -4,6 +4,7 @@ const Profile = require("./profile.model");
 const Question = require("../question/question.model");
 const User = require("../auth/auth.model");
 const createHttpError = require("http-errors");
+const profileModel = require("./profile.model");
 require("dotenv").config();
 
 exports.uploadProfile = async (req, res, next) => {
@@ -46,10 +47,10 @@ exports.uploadProfile = async (req, res, next) => {
 };
 
 exports.getProfile = async (req, res, next) => {
-  const user = await User.findOne({ _id: req.user.id });
+  const user = await User.findOne({ _id: req.params.id });
   if (!user) return next(new MyError(404, "Invalid User ID"));
   console.log(user);
-  const profile = await Profile.findOne({ user: req.user.id })
+  const profile = await Profile.findOne({ user: req.params.id })
     .select("-questions_details")
     .populate("subscription", "-__v -createdAt -updatedAt");
   if (!profile)
@@ -92,27 +93,27 @@ exports.GetAllUsers = async (req, res, next) => {
     };
     const [profile, count] = await Promise.all([
       User.find(findBy)
-        .select("-password -__v")
         .sort({ _id: 1 })
         .skip(limit * (page - 1))
         .limit(limit),
       User.countDocuments(findBy),
     ]);
-    // let profiles = profile.map(profile => {
-    //     return {
-    //         name: profile.user.firstName + " " + profile.user.lastName,
-    //         role: profile.user.role,
-    //         email: profile.user.email,
-    //         area_of_practise: profile.user.area_of_practise,
-    //         phone: profile.phone,
-    //         subscriptionData: {
-    //             _id: profile.subscription._id,
-    //             name: profile.subscription.name,
-    //             expiryDate: profile.expiryDate
-    //         },
-    //         createdAt: profile.user.createdAt,
-    //     }
-    // })
+    // let profiles = profile.map((profile) => {
+    //   console.log(profile);
+    //   return {
+    //     name: profile.firstName + " " + profile.lastName,
+    //     role: profile.role,
+    //     email: profile.email,
+    //     area_of_practise: profile.area_of_practise,
+    //     phone: profile.phone,
+    //     subscriptionData: {
+    //       _id: profile.subscription._id,
+    //       name: profile.subscription.name,
+    //       expiryDate: profile.expiryDate,
+    //     },
+    //     createdAt: profile.createdAt,
+    //   };
+    // });
     res.status(200).json({
       status: 200,
       message: "success",
