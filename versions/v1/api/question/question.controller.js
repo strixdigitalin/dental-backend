@@ -405,3 +405,19 @@ exports.update = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.delById = async (req, res, next) => {
+  try {
+    const question = await Question.findById(req.params.id);
+    if (!question) throw createHttpError.NotFound("NO DATA FOUND");
+    const deletedQuestion = await Question.findByIdAndRemove(req.params.id);
+
+    res.status(200).json({
+      statusCode: 200,
+      message: "Deleted Successfully",
+      data: deletedQuestion,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

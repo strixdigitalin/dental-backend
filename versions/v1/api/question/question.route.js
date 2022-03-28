@@ -8,6 +8,7 @@ const {
   getAllQuestionsUser,
   getTestExists,
   update,
+  delById,
 } = require("./question.controller");
 const router = express.Router();
 const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
@@ -20,5 +21,6 @@ router.post("/", AdminVerifyToken, createQuestion);
 router.patch("/cat/:id", verifyToken, addQuestionToCategory);
 router.get("/test/:id", verifyToken, getQuestionById);
 router.patch("/update/:id", update);
+router.delete("/delete/:id", delById);
 
 module.exports = router;
