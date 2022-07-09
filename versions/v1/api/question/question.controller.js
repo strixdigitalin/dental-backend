@@ -25,13 +25,13 @@ exports.createQuestion = async (req, res, next) => {
       console.log(data);
       subjectModel
         .updateOne({ _id: data.subject }, { $inc: { questionCount: 1 } })
-        .then((d) => {});
+        .then((d) => { });
       topicsModel
         .updateOne({ _id: data.topic }, { $inc: { questionCount: 1 } })
-        .then((d) => {});
+        .then((d) => { });
       subtopicsModel
         .updateOne({ _id: data.subtopic }, { $inc: { questionCount: 1 } })
-        .then((d) => {});
+        .then((d) => { });
       res
         .status(200)
         .json({ statusCode: 200, success: true, message: "success", question });
@@ -73,7 +73,7 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       newArrSubTopic.push(obj);
     }
     const page = req.query.page || 1;
-    const noOfQuestions = req.query.limit;
+    const noOfQuestions = req.query.limit * 1 || 50;
     const limit = 1 * 1 || 50;
     let count;
 
@@ -143,33 +143,51 @@ exports.getAllQuestionsUser = async (req, res, next) => {
       cond.pop();
       count = await Test.aggregate(cond);
       count = count.length;
+      res.status(200).json({
+        success: true,
+        message: "success",
+        count,
+        pageCount: parseInt(noOfQuestions),
+        data: results,
+      });
     } else {
-      let cond = [
-        {
-          $match: {
-            $or: newArrSubTopic,
-          },
-        },
-        {
-          $project: {
-            __v: 0,
-          },
-        },
-        { $skip: limit * (page - 1) },
-        { $limit: 1 },
-      ];
-      results = await Question.aggregate(cond);
-      cond.pop();
-      cond.pop();
-      count = results.length;
+
+      // let newquery = {};
+      // newquery["subtopic"] = {
+      //   "or$": req.body.subTopicId
+      // }
+
+      // let cond = [
+      //   {
+      //     $match: {
+      //       $or: newArrSubTopic,
+      //     },
+      //   },
+      //   {
+      //     $project: {
+      //       __v: 0,
+      //     },
+      //   },
+      //   { $skip: limit * (page - 1) },
+      //   { $limit: 1 },
+      // ];
+      const newcount = await Question.countDocuments({ $or: newArrSubTopic })
+        .skip(noOfQuestions * (page - 1))
+        .limit(noOfQuestions)
+      results = await Question.find({ $or: newArrSubTopic })
+        .skip(noOfQuestions * (page - 1))
+        .limit(noOfQuestions);
+      // cond.pop();
+      // cond.pop();
+      // count = results.length;
+      res.status(200).json({
+        success: true,
+        message: "success",
+        count: newcount,
+        pageCount: Math.ceil(newcount / noOfQuestions),
+        data: results,
+      });
     }
-    res.status(200).json({
-      success: true,
-      message: "success",
-      count,
-      pageCount: parseInt(noOfQuestions),
-      data: results,
-    });
   } catch (error) {
     next(error);
   }
