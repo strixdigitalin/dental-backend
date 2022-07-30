@@ -10,6 +10,8 @@ const topicsModel = require("../topics/topics.model");
 const subtopicsModel = require("../subtopics/subtopics.model");
 const ObjectId = mongoose.Types.ObjectId;
 exports.createQuestion = async (req, res, next) => {
+
+  
   const question = new Question({
     subject: req.body.subject,
     topic: req.body.topic,
@@ -40,6 +42,11 @@ exports.createQuestion = async (req, res, next) => {
       next(err);
     });
 };
+
+
+
+
+
 
 exports.getTestExists = async (req, res, next) => {
   try {

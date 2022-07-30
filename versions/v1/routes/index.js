@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const authRoute = require("../api/auth/auth.route");
 const SubjectRoute = require("../api/subjects/subject.route");
+const PackageRoute = require("../api/package/subject.route");
 const questionRoute = require("../api/question/question.route");
 const subcategoryRoute = require("../api/topics/topics.route");
 const subscriptionRoute = require("../api/subscription/subscription.route");
@@ -16,6 +17,7 @@ const paymentRoute = require("../api/payments/payment.route");
 
 router.use("/auth", authRoute);
 router.use("/subject", SubjectRoute);
+router.use("/package", PackageRoute);
 router.use("/question", questionRoute);
 router.use("/topic", subcategoryRoute);
 router.use("/subscription", subscriptionRoute);
