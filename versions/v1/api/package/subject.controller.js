@@ -33,6 +33,8 @@ exports.getAllSubjects = async (req, res, next) => {
   }
 };
 
+
+
 exports.getSubjectDetails = async (req, res, next) => {
   try {
     const subjects = await Subject.aggregate([
