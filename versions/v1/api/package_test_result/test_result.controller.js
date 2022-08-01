@@ -213,6 +213,7 @@ exports.createTestResult = (req, res, next) => {
 exports.createTestResultPackage = async (req, res, next) => {
   try {
     const bodyData = req.body;
+    const userId = req.user.id;
     console.log(bodyData, "<<<<body data");
     const data = new Test({
       // test_name: {
@@ -222,10 +223,8 @@ exports.createTestResultPackage = async (req, res, next) => {
       package: req.body.package,
 
       mode: req.body.mode,
-      user: "6158464fa0282b1bd73c922d",
-      subjects: {
-        type: Array,
-      },
+      user: userId,
+      // user: "6158464fa0282b1bd73c922d",
 
       questions_details: req.body.questions_details,
       totalIncorrect: req.body.totalIncorrect,
