@@ -210,22 +210,56 @@ exports.createTestResult = (req, res, next) => {
     });
 };
 
+exports.EditTest = async (req, res, next) => {
+  try {
+    // const data = new Test({
+    //   package: req.body.package,
+    //   mode: req.body.mode,
+    //   user: userId,
+    //   questions_details: req.body.questions_details,
+    //   totalIncorrect: req.body.totalIncorrect,
+    //   totalQuestion: req.body.totalQuestion,
+    //   totalCorrect: req.body.totalCorrect,
+    //   totalUnanswered: req.body.totalUnanswered,
+    //   totalTimeSpend: req.body.totalTimeSpend,
+    //   totalMarked: req.body.totalMarked,
+    //   totalScore: (+req.body.totalCorrect * 100) / +req.body.totalQuestion,
+    // });
+    console.log(req.body);
+
+    const { data } = await Test.findByIdAndUpdate(req.body.testId, {
+      $push: {
+        questions_details: req.body.question_details,
+      },
+      isTestCompleted: req.body.isTestCompleted,
+      $inc: {
+        totalIncorrect: 1,
+        totalCorrect: 0,
+        totalUnanswered: 0,
+        totalMarked: 1,
+        totalTimeSpend: 80,
+      },
+    });
+    res.status(200).send({
+      statusCode: 200,
+      message: "success",
+      data,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 exports.createTestResultPackage = async (req, res, next) => {
   try {
     const bodyData = req.body;
     const userId = req.user.id;
     console.log(bodyData, "<<<<body data");
     const data = new Test({
-      // test_name: {
-      //   type: String,
-      //   // required: true,
-      // },
       package: req.body.package,
-
       mode: req.body.mode,
       user: userId,
       // user: "6158464fa0282b1bd73c922d",
-
       questions_details: req.body.questions_details,
       totalIncorrect: req.body.totalIncorrect,
       totalQuestion: req.body.totalQuestion,

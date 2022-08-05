@@ -30,6 +30,7 @@ const testSchema = Schema(
     topics: {
       type: Array,
     },
+    isTestCompleted: { type: Boolean, default: false },
     questions_details: [
       {
         question: {
