@@ -7,11 +7,13 @@ const {
   topicPerfomance,
   createTestResultPackage,
   EditTest,
+  testCompleted,
 } = require("./test_result.controller");
 const router = express.Router();
 
 router.post("/add", verifyToken, createTestResultPackage);
 router.post("/submit/answer", EditTest);
+router.post("/test-completed/:id", testCompleted);
 // router.post("/add", verifyToken, createTestResult);
 // router.get("/all",verifyToken, getAllTestResultsUser);
 router.get("/all", getAllTestResultsUser);

@@ -52,6 +52,7 @@ const testSchema = Schema(
     totalTimeSpend: Number,
     totalMarked: Number,
     totalScore: Number,
+    endTime: Number,
   },
   { timestamps: true }
 );

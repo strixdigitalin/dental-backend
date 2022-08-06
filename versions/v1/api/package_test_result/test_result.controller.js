@@ -226,18 +226,24 @@ exports.EditTest = async (req, res, next) => {
     //   totalScore: (+req.body.totalCorrect * 100) / +req.body.totalQuestion,
     // });
     console.log(req.body);
-
+    const {
+      totalIncorrect,
+      totalCorrect,
+      totalUnanswered,
+      totalMarked,
+      totalTimeSpend,
+    } = req.body;
     const { data } = await Test.findByIdAndUpdate(req.body.testId, {
       $push: {
         questions_details: req.body.question_details,
       },
       isTestCompleted: req.body.isTestCompleted,
       $inc: {
-        totalIncorrect: 1,
-        totalCorrect: 0,
-        totalUnanswered: 0,
-        totalMarked: 1,
-        totalTimeSpend: 80,
+        totalIncorrect: totalIncorrect,
+        totalCorrect: totalCorrect,
+        totalUnanswered: totalUnanswered,
+        totalMarked: totalMarked,
+        totalTimeSpend: totalTimeSpend,
       },
     });
     res.status(200).send({
@@ -266,6 +272,7 @@ exports.createTestResultPackage = async (req, res, next) => {
       totalCorrect: req.body.totalCorrect,
       totalUnanswered: req.body.totalUnanswered,
       totalTimeSpend: req.body.totalTimeSpend,
+      endTime: req.body.endTime,
       totalMarked: req.body.totalMarked,
       totalScore: (+req.body.totalCorrect * 100) / +req.body.totalQuestion,
     });
@@ -312,6 +319,18 @@ exports.getAllTestResultsUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// exports.getInCompleted
+
+exports.testCompleted = async (req, res, next) => {
+  const { id } = req.params;
+  const { data } = await Test.findByIdAndUpdate(
+    id,
+    { isTestCompleted: true },
+    { new: true }
+  );
+  res.status(200).send({ success: true, statusCode: 200, data });
 };
 
 exports.getTestResultsById = async (req, res, next) => {
