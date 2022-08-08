@@ -9,11 +9,12 @@ const {
   getTestExists,
   update,
   delById,
+  getAllQuestionsForAdmin,
 } = require("./question.controller");
 const router = express.Router();
 const { verifyToken, AdminVerifyToken } = require("../../middlewares/auth");
 
-router.get("/", getAllQuestions);
+router.get("/", getAllQuestionsForAdmin);
 router.get("/testExists", verifyToken, getTestExists);
 // router.post("/user", verifyToken, getAllQuestionsUser);
 router.post("/user", getAllQuestionsUser);

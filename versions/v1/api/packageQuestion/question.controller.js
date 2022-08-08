@@ -205,6 +205,16 @@ exports.getAllQuestionsUser1 = async (req, res, next) => {
   }
 };
 
+exports.getAllQuestionsForAdmin = async (req, res, next) => {
+  try {
+    console.log(req.query, "<<<params");
+    const data = await Question.find(req.query);
+    res.status(200).send({ success: true, statusCode: 200, data });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
     // const data=await subjectModel.find()
