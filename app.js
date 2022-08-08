@@ -7,9 +7,13 @@ require("dotenv").config();
 require("./versions/v1/helpers/init.mongodb");
 
 const app = express();
+
 app.use(cors());
 
 require("events").EventEmitter.defaultMaxListeners = 15;
+
+//Connection db
+require("./versions/v1/helpers/init.mongodb");
 
 app.use(logger("dev"));
 app.use(express.json());
