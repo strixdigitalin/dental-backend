@@ -209,7 +209,7 @@ exports.getAllQuestionsForAdmin = async (req, res, next) => {
   try {
     console.log(req.query, "<<<params");
     const data = await Question.find(req.query);
-    res.status(200).send({ success: true, statusCode: 200, data });
+    res.status(200).send({ success: true, statusCode: 200, data: data });
   } catch (e) {
     console.log(e);
   }
