@@ -33,7 +33,13 @@ exports.getAllSubjects = async (req, res, next) => {
   }
 };
 
-
+exports.deletePackage = async (req, res, next) => {
+  const deletedData = await Subject.findByIdAndDelete(req.params.id);
+  res.status(200).send({
+    success: true,
+    message: "PackageDeleted",
+  });
+};
 
 exports.getSubjectDetails = async (req, res, next) => {
   try {
@@ -131,10 +137,6 @@ exports.createSubject = (req, res, next) => {
       next(err);
     });
 };
-
-
-
-
 
 exports.update = async (req, res, next) => {
   const body = req.body || {};
