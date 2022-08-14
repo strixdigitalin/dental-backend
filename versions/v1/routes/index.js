@@ -15,6 +15,7 @@ const adminAuthRoute = require("../api/adminAuth/adminAuth.route");
 const uploadImgRoute = require("../api/upload/uploadImage");
 const dashboardRoute = require("../api/dashboard/dashboard.route");
 const paymentRoute = require("../api/payments/payment.route");
+const landingRoute = require("../api/ladingData.js/landingAPI");
 // @route - https://dworld-backend.herokuapp.com/api/v1
 
 router.use("/auth", authRoute);
@@ -32,6 +33,7 @@ router.use("/adminAuth", adminAuthRoute);
 router.use("/upload", uploadImgRoute);
 router.use("/dashboard", dashboardRoute);
 router.use("/payment", paymentRoute);
+router.use("/landing", landingRoute);
 // router.use("/test", testRoute);
 
 module.exports = router;
