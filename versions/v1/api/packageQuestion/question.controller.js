@@ -218,11 +218,14 @@ exports.getAllQuestionsForAdmin = async (req, res, next) => {
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
     // const data=await subjectModel.find()
-    const { limit, page, package } = req.query;
+    const { limit, page, package, questionId } = req.query;
     let filterData = {};
     if (package == undefined || package == "all") {
       filterData = {};
     } else filterData = { package };
+    if (questionId == undefined || package == "") {
+      filterData = {};
+    } else filterData = { _id: questionId };
 
     // page != undefined ? (filterData.page = page) : null;
     // limit != undefined ? (filterData.limit = limit) : null;
@@ -480,9 +483,11 @@ exports.update = async (req, res, next) => {
 
 exports.delById = async (req, res, next) => {
   try {
+    console.log(req.params);
     const question = await Question.findById(req.params.id);
     if (!question) throw createHttpError.NotFound("NO DATA FOUND");
-    const deletedQuestion = await Question.findByIdAndRemove(req.params.id);
+    // const deletedQuestion = await Question.findByIdAndRemove(req.params.id);
+    const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       statusCode: 200,

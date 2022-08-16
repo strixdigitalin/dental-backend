@@ -2,6 +2,7 @@ const Subject = require("./subject.model");
 const MyError = require("../../error/MyError");
 const mongoose = require("mongoose");
 const async = require("async");
+const Question = require("../packageQuestion/question.model");
 const createError = require("http-errors");
 
 exports.getAllSubjects = async (req, res, next) => {
@@ -35,6 +36,7 @@ exports.getAllSubjects = async (req, res, next) => {
 
 exports.deletePackage = async (req, res, next) => {
   const deletedData = await Subject.findByIdAndDelete(req.params.id);
+  const deleteQues = await Question.deleteMany({ package: req.params.id });
   res.status(200).send({
     success: true,
     message: "PackageDeleted",

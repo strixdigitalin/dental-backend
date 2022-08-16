@@ -352,6 +352,25 @@ exports.getTestResultsById = async (req, res, next) => {
   }
 };
 
+exports.getUserPreviousTest = async (req, res, next) => {
+  try {
+    console.log("we are here");
+    const { user } = req.query;
+    console.log(req.query, "<<<query");
+    const testResults = await Test.find(req.query).populate("package");
+    // .populate(
+    //   "questions_details.question"
+    // );
+    res.status(200).json({
+      statusCode: 200,
+      message: "success",
+      data: testResults,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.topicPerfomance = async (req, res, next) => {
   try {
     async.parallel(

@@ -9,7 +9,9 @@ const testSchema = Schema(
       // required: true,
     },
     package: {
-      type: String,
+      // type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Package",
       // required: true,
     },
 

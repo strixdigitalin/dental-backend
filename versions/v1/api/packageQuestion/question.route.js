@@ -25,5 +25,5 @@ router.patch("/cat/:id", verifyToken, addQuestionToCategory);
 router.get("/test/:id", verifyToken, getQuestionById);
 router.patch("/update/:id", update);
 router.delete("/delete/:id", delById);
-
+// router.get("/")
 module.exports = router;
