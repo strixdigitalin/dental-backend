@@ -218,14 +218,16 @@ exports.getAllQuestionsForAdmin = async (req, res, next) => {
 exports.getAllQuestionsUser = async (req, res, next) => {
   try {
     // const data=await subjectModel.find()
+    console.log("here");
     const { limit, page, package, questionId } = req.query;
     let filterData = {};
-    if (package == undefined || package == "all") {
-      filterData = {};
-    } else filterData = { package };
-    if (questionId == undefined || package == "") {
-      filterData = {};
-    } else filterData = { _id: questionId };
+    if (package != undefined) {
+      filterData = { ...filterData, package };
+    }
+
+    if (questionId != undefined) {
+      filterData = { ...filterData, questionId };
+    }
 
     // page != undefined ? (filterData.page = page) : null;
     // limit != undefined ? (filterData.limit = limit) : null;
@@ -233,10 +235,8 @@ exports.getAllQuestionsUser = async (req, res, next) => {
     // console.log(req.query);
 
     console.log(filterData, "<<<<filter data");
-    const data = await Question.find(filterData)
-      .sort({ $natural: -1 })
-      .skip(page - 1)
-      .limit(1);
+    const data = await Question.find(filterData).skip(page - 1);
+    // .sort({ $natural: -1 })
 
     res.status(200).json({
       success: true,
