@@ -240,6 +240,7 @@ exports.EditTest = async (req, res, next) => {
             //   req.body.question_details[0].markedOption,
 
             "questions_details.$": req.body.question_details[0],
+            totalPracticeTime: req.body.totalPracticeTime,
 
             // isTestCompleted: req.body.isTestCompleted,
           },
@@ -265,6 +266,7 @@ exports.EditTest = async (req, res, next) => {
             questions_details: req.body.question_details,
           },
           isTestCompleted: req.body.isTestCompleted,
+          totalPracticeTime: req.body.totalPracticeTime,
           $inc: {
             totalIncorrect: totalIncorrect,
             totalCorrect: totalCorrect,
