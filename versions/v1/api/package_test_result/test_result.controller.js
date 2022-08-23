@@ -212,19 +212,6 @@ exports.createTestResult = (req, res, next) => {
 
 exports.EditTest = async (req, res, next) => {
   try {
-    // const data = new Test({
-    //   package: req.body.package,
-    //   mode: req.body.mode,
-    //   user: userId,
-    //   questions_details: req.body.questions_details,
-    //   totalIncorrect: req.body.totalIncorrect,
-    //   totalQuestion: req.body.totalQuestion,
-    //   totalCorrect: req.body.totalCorrect,
-    //   totalUnanswered: req.body.totalUnanswered,
-    //   totalTimeSpend: req.body.totalTimeSpend,
-    //   totalMarked: req.body.totalMarked,
-    //   totalScore: (+req.body.totalCorrect * 100) / +req.body.totalQuestion,
-    // });
     console.log(req.body);
     const {
       totalIncorrect,
@@ -233,59 +220,126 @@ exports.EditTest = async (req, res, next) => {
       totalMarked,
       totalTimeSpend,
     } = req.body;
+    // ---------------------------
+    console.log(req.body.question_details[0], "<<<<question detail");
+
+    const checkPrevQuestion = await Test.findOne({
+      _id: req.body.testId,
+      "questions_details.question": req.body.question_details[0].question, //62fe16fba360f32100ba634f
+    });
+
+    if (checkPrevQuestion != null) {
+      const upDateQuestion = await Test.findOneAndUpdate(
+        {
+          _id: req.body.testId,
+          "questions_details.question": req.body.question_details[0].question,
+        },
+        {
+          $set: {
+            // "questions_details.$.markedOption":
+            //   req.body.question_details[0].markedOption,
+
+            "questions_details.$": req.body.question_details[0],
+
+            // isTestCompleted: req.body.isTestCompleted,
+          },
+        }
+      );
+      res.status(200).send({
+        statusCode: 200,
+        message: "success",
+        upDateQuestion,
+      });
+    }
+
+    // ---------------------
+    // return null;
+    if (checkPrevQuestion == null) {
+      console.log("new");
+      const data = await Test.findOneAndUpdate(
+        {
+          _id: req.body.testId,
+        },
+        {
+          $push: {
+            questions_details: req.body.question_details,
+          },
+          isTestCompleted: req.body.isTestCompleted,
+          $inc: {
+            totalIncorrect: totalIncorrect,
+            totalCorrect: totalCorrect,
+            totalUnanswered: totalUnanswered,
+            totalMarked: totalMarked,
+            totalTimeSpend: totalTimeSpend,
+          },
+        }
+      );
+      res.status(200).send({
+        statusCode: 200,
+        message: "success",
+        data,
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+exports.EditTest2 = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const {
+      totalIncorrect,
+      totalCorrect,
+      totalUnanswered,
+      totalMarked,
+      totalTimeSpend,
+    } = req.body;
+    // ---------------------------
+    console.log(req.body.question_details[0], "<<<<question detail");
+    const data = await Test.findOne({
+      _id: "6304e1001b4b612b906ada18",
+      "questions_details.question": "62fe16fba360f32100ba634b",
+    });
+    // const data = await Test.findOneAndUpdate(
+    //   {
+    //     // _id: req.body.testId,
+    //     _id: "6304e01d55c4de32b86f148b",
+    //     "questions_details.question": "62fe16fba360f32100ba634b",
+    //   },
+    //   {
+    //     $set: {
+    //       "questions_details.$.markedOption": 8,
+    //       // isTestCompleted: req.body.isTestCompleted,
+    //     },
+    //     // $inc: {
+    //     //   totalIncorrect: totalIncorrect,
+    //     //   totalCorrect: totalCorrect,
+    //     //   totalUnanswered: totalUnanswered,
+    //     //   totalMarked: totalMarked,
+    //     //   totalTimeSpend: totalTimeSpend,
+    //     // },
+    //   },
+    //   { new: true }
+    // );
+
     // const data = await Test.findOneAndUpdate(
     //   {
     //     _id: req.body.testId,
-    //     questions_details: {
-    //       $elemMatch: { question: req.body.question_details.question },
+    //   },
+    //   {
+    //     $push: {
+    //       questions_details: req.body.question_details,
+    //     },
+    //     isTestCompleted: req.body.isTestCompleted,
+    //     $inc: {
+    //       totalIncorrect: totalIncorrect,
+    //       totalCorrect: totalCorrect,
+    //       totalUnanswered: totalUnanswered,
+    //       totalMarked: totalMarked,
+    //       totalTimeSpend: totalTimeSpend,
     //     },
     //   }
-    //   // {
-    //   //   $push: {
-    //   //     questions_details: req.body.question_details,
-    //   //   },
-    //   //   isTestCompleted: req.body.isTestCompleted,
-    //   //   $inc: {
-    //   //     totalIncorrect: totalIncorrect,
-    //   //     totalCorrect: totalCorrect,
-    //   //     totalUnanswered: totalUnanswered,
-    //   //     totalMarked: totalMarked,
-    //   //     totalTimeSpend: totalTimeSpend,
-    //   //   },
-    //   // }
     // );
-
-    // ------
-    const { data } = await Test.findOneAndUpdate(
-      { _id: req.body.testId },
-      {
-        $push: {
-          questions_details: req.body.question_details,
-        },
-        isTestCompleted: req.body.isTestCompleted,
-        $inc: {
-          totalIncorrect: totalIncorrect,
-          totalCorrect: totalCorrect,
-          totalUnanswered: totalUnanswered,
-          totalMarked: totalMarked,
-          totalTimeSpend: totalTimeSpend,
-        },
-      }
-    );
-    // ------------
-    // const { data } = await Test.findByIdAndUpdate(req.body.testId, {
-    //   $push: {
-    //     questions_details: req.body.question_details,
-    //   },
-    //   isTestCompleted: req.body.isTestCompleted,
-    //   $inc: {
-    //     totalIncorrect: totalIncorrect,
-    //     totalCorrect: totalCorrect,
-    //     totalUnanswered: totalUnanswered,
-    //     totalMarked: totalMarked,
-    //     totalTimeSpend: totalTimeSpend,
-    //   },
-    // });
     res.status(200).send({
       statusCode: 200,
       message: "success",
@@ -378,6 +432,7 @@ exports.getTestResultsById = async (req, res, next) => {
     // const testResults = await Test.findOne({
     //   $and: [{ user: req.user.id }, { _id: req.params.id }],
     // }).populate({
+    console.log(req.params.id, "<<<<");
     const testResults = await Test.findOne({ _id: req.params.id }).populate(
       "questions_details.question"
     );
