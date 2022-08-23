@@ -41,6 +41,7 @@ const testSchema = Schema(
           ref: "PackageQuestion",
         },
         isCorrect: Boolean,
+        markedOption: String,
         isIncorrect: Boolean,
         isMarked: Boolean,
         isUnanswered: Boolean,
